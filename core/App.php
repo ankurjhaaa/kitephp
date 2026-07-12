@@ -4,40 +4,48 @@ namespace Kite\Core;
 
 /**
  * The main application wrapper for KitePHP.
- * Handles the initialization of the application and routing of the request.
+ * This class handles the initialization of the application and the routing of incoming HTTP requests.
+ * It serves as the entry point for the framework's core lifecycle.
  */
 class App
 {
     /**
-     * The absolute path to the root directory.
+     * The absolute path to the root directory of the project.
      */
     protected string $basePath;
 
     /**
      * App constructor.
+     * Sets the base path and calls the bootstrap method to prepare the environment.
      *
-     * @param string $basePath
+     * @param string $basePath The root directory path (e.g., /var/www/kitephp)
      */
     public function __construct(string $basePath)
     {
+        // Remove trailing slashes to ensure consistent path resolution
         $this->basePath = rtrim($basePath, '/');
+        
+        // Initialize the framework components
         $this->bootstrap();
     }
 
     /**
      * Bootstraps the application.
+     * This method loads environment variables, registers error handlers, and loads route files.
      */
     protected function bootstrap(): void
     {
-        // Load environment variables
+        // 1. Load environment variables from the .env file into the $_ENV superglobal
         Env::load($this->basePath . '/.env');
 
-        // Register custom professional error handler
+        // 2. Register our custom, professional error handler
+        // This replaces the default PHP error output with a beautiful, readable error page
         if (class_exists(ErrorHandler::class)) {
             ErrorHandler::register();
         }
 
-        // Setup error handling based on env (fallback behavior for core PHP errors if needed)
+        // 3. Configure native PHP error reporting as a fallback
+        // If APP_DEBUG is true in .env, we show all errors. Otherwise, we hide them for production security.
         $debug = Env::get('APP_DEBUG', false);
         if ($debug) {
             ini_set('display_errors', '1');
@@ -48,20 +56,23 @@ class App
             error_reporting(0);
         }
 
-        // Load route definitions
+        // 4. Load the user-defined route files
         $this->loadRoutes();
     }
 
     /**
-     * Load the application's route files.
+     * Load the application's route definition files.
+     * It includes web routes (for browser access) and api routes (for JSON endpoints).
      */
     protected function loadRoutes(): void
     {
+        // Load web routes (Standard HTML pages)
         $webRoutePath = $this->basePath . '/route/url.php';
         if (file_exists($webRoutePath)) {
             require $webRoutePath;
         }
 
+        // Load API routes (JSON responses, usually prefixed with /api)
         $apiRoutePath = $this->basePath . '/route/api.php';
         if (file_exists($apiRoutePath)) {
             require $apiRoutePath;
@@ -69,13 +80,19 @@ class App
     }
 
     /**
-     * Run the application, dispatch the request and send the response.
+     * Run the application.
+     * This method captures the incoming HTTP request, dispatches it to the Router, 
+     * and sends the final HTTP response back to the client.
      */
     public function run(): void
     {
-        // Handle Request and Route matching
+        // Capture the current HTTP request (URI, Method, Headers, POST data)
         $request = Request::capture();
+        
+        // Pass the request to the Router to find the matching route and execute its controller
         $response = Router::dispatch($request);
+        
+        // Output the final headers and body to the browser
         $response->send();
     }
 }

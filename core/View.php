@@ -2,83 +2,119 @@
 
 namespace Kite\Core;
 
+/**
+ * The View Engine.
+ * Responsible for rendering `.php` or `.kite.php` template files.
+ * Provides a lightweight compiler for Kite syntax (similar to Laravel Blade).
+ */
 class View
 {
+    // Stores the active layout file path
     protected static string $layout = '';
+    
+    // Stores the captured HTML content for different sections
     protected static array $sections = [];
+    
+    // Tracks which section is currently being buffered
     protected static string $currentSection = '';
 
+    /**
+     * Render a view file with the given data.
+     * 
+     * @param string $view The view name (e.g., 'home' or 'admin.dashboard')
+     * @param array $data Variables to pass to the view
+     */
     public static function make(string $view, array $data = [])
     {
-        // Extract variables to be available in the view
+        // Extract array keys as variables into the current scope
         extract($data);
 
+        // Find the absolute path to the view file (or compile it if it's a .kite.php file)
         $viewPath = self::resolvePath($view);
 
+        // Start output buffering to capture the HTML instead of printing it immediately
         ob_start();
         require $viewPath;
-        $content = ob_get_clean();
+        $content = ob_get_clean(); // Get the buffered HTML and clear the buffer
 
+        // If the view specified a layout file using @extends('layout'), load the layout
         if (self::$layout !== '') {
             $layoutPath = self::resolvePath(self::$layout);
-            self::$layout = ''; // Reset layout for subsequent renders
+            self::$layout = ''; // Reset layout state for subsequent view renders
             
             if (file_exists($layoutPath)) {
+                // Buffer the layout HTML
                 ob_start();
                 require $layoutPath;
                 $content = ob_get_clean();
             }
         }
 
-        // Output the content directly
+        // Echo the final compiled HTML to the browser
         echo $content;
     }
 
+    /**
+     * Resolves the view name to an absolute file path.
+     * Prioritizes `.kite.php` files over standard `.php` files.
+     */
     protected static function resolvePath(string $view): string
     {
+        // Convert dot notation to directory slashes (e.g., admin.home -> admin/home)
         $base = dirname(__DIR__) . '/resource/view/' . str_replace('.', '/', $view);
+        
         $kitePath = $base . '.kite.php';
         $phpPath = $base . '.php';
 
-        // Check for .kite.php first
+        // Check for Kite template engine file first
         if (file_exists($kitePath)) {
+            // Compile the file into pure PHP and return the cached path
             return self::compile($kitePath);
         }
 
-        // Fallback to raw .php
+        // Fallback to standard PHP view
         if (file_exists($phpPath)) {
             return $phpPath;
         }
 
+        // Throw an exception if neither file exists
         abort(500, "View [{$view}] not found.");
     }
 
+    /**
+     * Compiles a `.kite.php` file into raw PHP.
+     * Uses Regex to replace `{{ }}` and `@if` with native PHP tags.
+     * The compiled file is cached in storage to ensure maximum performance.
+     */
     protected static function compile(string $path): string
     {
         $cacheDir = dirname(__DIR__) . '/storage/cache/views';
+        
+        // Ensure the cache directory exists
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0755, true);
         }
 
-        // Create a unique hash for the cached file
+        // Create a unique hash for the cached PHP file based on the original file path
         $compiledPath = $cacheDir . '/' . md5($path) . '.php';
 
-        // Recompile only if the view has been modified since the last compile
+        // Recompile ONLY if the cached file doesn't exist, OR if the original view file has been modified recently
         if (!file_exists($compiledPath) || filemtime($path) > filemtime($compiledPath)) {
             $content = file_get_contents($path);
             
-            // Compile {{ $var }} -> <?php echo e($var); ? >
+            // Compile {{ $var }} to htmlspecialchars output to prevent XSS attacks
             $content = preg_replace('/{{\s*(.+?)\s*}}/', '<?php echo e($1); ?>', $content);
             
-            // Compile {!! $var !!} -> <?php echo $var; ? >
+            // Compile {!! $var !!} to raw, unescaped output (Use with caution!)
             $content = preg_replace('/{!!\s*(.+?)\s*!!}/', '<?php echo $1; ?>', $content);
             
-            // Compile Control Structures
+            // Compile Control Structures (If / Else)
             $content = preg_replace('/@if\s*\((.*)\)/', '<?php if ($1): ?>', $content);
             $content = preg_replace('/@elseif\s*\((.*)\)/', '<?php elseif ($1): ?>', $content);
             $content = preg_replace('/@else/', '<?php else: ?>', $content);
             $content = preg_replace('/@endif/', '<?php endif; ?>', $content);
             
+            // Compile Loops (Foreach)
             $content = preg_replace('/@foreach\s*\((.*)\)/', '<?php foreach ($1): ?>', $content);
             $content = preg_replace('/@endforeach/', '<?php endforeach; ?>', $content);
 
@@ -88,43 +124,62 @@ class View
             $content = preg_replace('/@endsection/', '<?php \Kite\Core\View::endSection(); ?>', $content);
             $content = preg_replace('/@yield\s*\((.*?)\)/', '<?php \Kite\Core\View::yieldSection($1); ?>', $content);
             
-            // Compile simple helpers
+            // Compile built-in helpers
             $content = preg_replace('/@csrf/', '<?php echo csrf(); ?>', $content);
 
+            // Save the compiled pure PHP into the cache folder
             file_put_contents($compiledPath, $content);
         }
 
         return $compiledPath;
     }
 
+    /**
+     * Define the parent layout for the current view.
+     */
     public static function layout(string $layout)
     {
-        // Strip quotes if they were passed via @extends('layout')
+        // Strip quotes passed by the regex matching
         self::$layout = trim($layout, "'\"");
     }
 
+    /**
+     * Start capturing HTML for a specific section (e.g., 'content').
+     */
     public static function section(string $name)
     {
         self::$currentSection = trim($name, "'\"");
-        ob_start();
+        ob_start(); // Start output buffering
     }
 
+    /**
+     * End capturing HTML for the current section and save it in the array.
+     */
     public static function endSection()
     {
         if (self::$currentSection === '') {
             return;
         }
 
+        // Get the buffered HTML and save it under the section name
         self::$sections[self::$currentSection] = ob_get_clean();
-        self::$currentSection = '';
+        self::$currentSection = ''; // Reset state
     }
 
+    /**
+     * Output a captured section inside a layout file.
+     */
     public static function yieldSection(string $name, string $default = '')
     {
         $name = trim($name, "'\"");
+        
+        // Print the section HTML if it exists, otherwise print the default value
         echo self::$sections[$name] ?? $default;
     }
 
+    /**
+     * Include a reusable view component.
+     */
     public static function component(string $view, array $data = [])
     {
         $viewPath = self::resolvePath($view);

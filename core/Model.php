@@ -4,18 +4,24 @@ namespace Kite\Core;
 
 use Kite\Core\Schema\Field;
 
+/**
+ * Base Model Class.
+ * All your application models in `database/models.php` must extend this class.
+ * It provides Django-style schema definitions and ties the model to the QueryBuilder.
+ */
 abstract class Model
 {
     /**
      * Get the database table name associated with the model.
-     * Defaults to the pluralized class name (e.g. User -> users).
+     * Automatically attempts to pluralize the class name (e.g., User -> users, Post -> posts).
+     * Override this method in your subclass if you want a custom table name.
      */
     public static function tableName(): string
     {
         $path = explode('\\', static::class);
-        $name = strtolower(array_pop($path));
+        $name = strtolower(array_pop($path)); // Get the class name without the namespace
         
-        // Simple pluralization (add 's' unless it already ends in 's')
+        // Simple pluralization (append 's' unless it already ends in 's')
         if (substr($name, -1) !== 's') {
             $name .= 's';
         }
@@ -24,12 +30,15 @@ abstract class Model
     }
 
     /**
-     * Get the full schema including auto-injected fields.
+     * Fetch the complete schema definition for this model.
+     * It reads the developer's custom fields, and automatically injects an 'id', 
+     * 'created_at', and 'updated_at' field if they weren't explicitly provided.
      */
     public static function getSchema(): array
     {
-        $fields = static::fields();
+        $fields = static::fields(); // Call the subclass's fields() method
 
+        // Automatically inject Primary Key ID if missing
         if (!isset($fields['id'])) {
             $fields = array_merge(
                 ['id' => Field::integer(['primary_key' => true, 'auto_increment' => true])],
@@ -37,21 +46,30 @@ abstract class Model
             );
         }
 
+        // Automatically inject created_at timestamp if missing
         if (!isset($fields['created_at'])) {
             $fields['created_at'] = Field::timestamp(['default' => 'CURRENT_TIMESTAMP']);
         }
 
+        // Automatically inject updated_at timestamp if missing
         if (!isset($fields['updated_at'])) {
             $fields['updated_at'] = Field::timestamp(['default' => 'CURRENT_TIMESTAMP', 'nullable' => true]);
         }
 
         return $fields;
     }
+    
+    /**
+     * Define the schema fields for this model.
+     * Must be implemented by the subclass returning an array of Field objects.
+     */
     abstract public static function fields(): array;
 
     /**
-     * Get a query builder instance for this model's table.
-     * Usage: User::objects()->where(...)->get();
+     * Get a fresh QueryBuilder instance bound to this model's table.
+     * This acts as the entry point for running database queries.
+     * 
+     * Usage Example: `User::objects()->where('age', '>', 18)->get();`
      */
     public static function objects(): QueryBuilder
     {

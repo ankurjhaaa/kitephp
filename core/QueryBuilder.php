@@ -4,76 +4,120 @@ namespace Kite\Core;
 
 use PDO;
 
+/**
+ * A lightweight, fluent SQL Query Builder.
+ * Allows constructing complex SQL queries using simple PHP methods.
+ * Prevents SQL injection by automatically using PDO Prepared Statements.
+ */
 class QueryBuilder
 {
+    // The active database connection
     protected PDO $pdo;
+    
+    // The target table name
     protected string $table;
+    
+    // Query building blocks
     protected array $select = ['*'];
     protected array $wheres = [];
-    protected array $bindings = [];
+    protected array $bindings = []; // Holds values for prepared statement placeholders (?)
     protected string $orderBy = '';
     protected string $limit = '';
 
+    /**
+     * Initialize the builder with a PDO instance and a target table.
+     */
     public function __construct(PDO $pdo, string $table)
     {
         $this->pdo = $pdo;
         $this->table = $table;
     }
 
+    /**
+     * Specify which columns should be returned by the SELECT query.
+     * e.g., ->select('id', 'name') or ->select(['id', 'name'])
+     */
     public function select(...$columns): self
     {
         $this->select = is_array($columns[0]) ? $columns[0] : $columns;
         return $this;
     }
 
+    /**
+     * Add a WHERE condition to the query.
+     * e.g., ->where('id', 5) OR ->where('age', '>', 18)
+     */
     public function where(string $column, $operator, $value = null): self
     {
+        // If only 2 arguments are passed, assume the operator is '='
         if (func_num_args() === 2) {
             $value = $operator;
             $operator = '=';
         }
 
+        // Store the condition and the binding value for the prepared statement
         $this->wheres[] = compact('column', 'operator', 'value');
         $this->bindings[] = $value;
+        
         return $this;
     }
 
+    /**
+     * Add an ORDER BY clause.
+     * e.g., ->orderBy('created_at', 'DESC')
+     */
     public function orderBy(string $column, string $direction = 'ASC'): self
     {
         $this->orderBy = " ORDER BY {$column} {$direction}";
         return $this;
     }
 
+    /**
+     * Limit the number of returned records.
+     */
     public function limit(int $limit): self
     {
         $this->limit = " LIMIT {$limit}";
         return $this;
     }
 
+    /**
+     * Internally compiles the pieces into a valid raw SELECT SQL string.
+     */
     protected function buildSelectQuery(): string
     {
+        // Start building the query
         $query = "SELECT " . implode(', ', $this->select) . " FROM {$this->table}";
 
+        // Add WHERE clauses if any exist
         if (!empty($this->wheres)) {
             $conditions = [];
             foreach ($this->wheres as $where) {
+                // Use '?' as a placeholder to prevent SQL injection
                 $conditions[] = "{$where['column']} {$where['operator']} ?";
             }
             $query .= " WHERE " . implode(' AND ', $conditions);
         }
 
+        // Append order and limit modifiers
         $query .= $this->orderBy . $this->limit;
 
         return $query;
     }
 
+    /**
+     * Execute the built SELECT query and return ALL matching rows.
+     */
     public function get(): array
     {
         $stmt = $this->pdo->prepare($this->buildSelectQuery());
         $stmt->execute($this->bindings);
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(); // Returns an array of objects
     }
 
+    /**
+     * Execute the SELECT query and return only the FIRST matching row.
+     */
     public function first()
     {
         $this->limit(1);
@@ -82,34 +126,49 @@ class QueryBuilder
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Insert a new record into the table.
+     * @param array $data Associative array of column => value
+     * @return int The ID of the newly inserted record
+     */
     public function insert(array $data): int
     {
         $columns = array_keys($data);
-        $placeholders = array_fill(0, count($data), '?');
+        $placeholders = array_fill(0, count($data), '?'); // Create '?' for every value
 
+        // Build the INSERT query
         $query = "INSERT INTO {$this->table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
 
         $stmt = $this->pdo->prepare($query);
-        $stmt->execute(array_values($data));
+        $stmt->execute(array_values($data)); // Safely bind the values
 
         return (int) $this->pdo->lastInsertId();
     }
 
+    /**
+     * Update existing records matching the current WHERE conditions.
+     * @param array $data Associative array of column => new_value
+     * @return int Number of affected rows
+     */
     public function update(array $data): int
     {
         $columns = array_keys($data);
+        // Create "column = ?" strings
         $sets = array_map(fn($col) => "{$col} = ?", $columns);
 
         $query = "UPDATE {$this->table} SET " . implode(', ', $sets);
         
-        $bindings = array_values($data);
+        $bindings = array_values($data); // Bindings for the SET clauses
 
+        // Add WHERE conditions if present
         if (!empty($this->wheres)) {
             $conditions = [];
             foreach ($this->wheres as $where) {
                 $conditions[] = "{$where['column']} {$where['operator']} ?";
             }
             $query .= " WHERE " . implode(' AND ', $conditions);
+            
+            // Merge SET bindings with WHERE bindings
             $bindings = array_merge($bindings, $this->bindings);
         }
 
@@ -119,6 +178,10 @@ class QueryBuilder
         return $stmt->rowCount();
     }
 
+    /**
+     * Delete records matching the current WHERE conditions.
+     * @return int Number of affected rows
+     */
     public function delete(): int
     {
         $query = "DELETE FROM {$this->table}";
