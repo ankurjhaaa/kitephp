@@ -6,11 +6,19 @@ use Kite\Core\View;
 use Kite\Core\Request;
 use Kite\Core\Response;
 use Kite\Core\Session;
+use Kite\Core\Database;
 
 if (!function_exists('env')) {
     function env(string $key, $default = null)
     {
         return Env::get($key, $default);
+    }
+}
+
+if (!function_exists('db')) {
+    function db(string $table)
+    {
+        return Database::table($table);
     }
 }
 

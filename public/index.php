@@ -20,10 +20,10 @@ require __DIR__ . '/../core/Autoloader.php';
 $autoloader = new \Kite\Core\Autoloader();
 $autoloader->addNamespace('Kite\Core\\', __DIR__ . '/../core');
 $autoloader->addNamespace('App\\Controller\\', __DIR__ . '/../app/controller');
-$autoloader->addNamespace('App\\Model\\', __DIR__ . '/../app/model');
 $autoloader->addNamespace('App\\Middleware\\', __DIR__ . '/../app/middleware');
 $autoloader->addNamespace('App\\Service\\', __DIR__ . '/../app/service');
 $autoloader->addNamespace('App\\', __DIR__ . '/../app');
+$autoloader->addNamespace('Database\\', __DIR__ . '/../database');
 $autoloader->register();
 
 // Load global helpers
