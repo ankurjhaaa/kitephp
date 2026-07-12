@@ -131,12 +131,9 @@ class Router
         $uri = rtrim($request->uri, '/');
         if ($uri === '') $uri = '/';
 
-        foreach (self::$routes as $route) {
-            // Check if HTTP method matches (or if the route accepts ANY method)
-            if ($route['method'] !== $request->method && $route['method'] !== 'ANY') {
-                continue;
-            }
+        $methodNotAllowed = false;
 
+        foreach (self::$routes as $route) {
             // Convert Route URI placeholders (e.g., {id}) into Regex capture groups
             $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[a-zA-Z0-9_.-]+)', $route['uri']);
             $pattern = '#^' . $pattern . '$#';
@@ -144,6 +141,12 @@ class Router
             // Check if the current request URI matches the regex pattern
             if (preg_match($pattern, $uri, $matches)) {
                 
+                // Check if HTTP method matches (or if the route accepts ANY method)
+                if ($route['method'] !== $request->method && $route['method'] !== 'ANY') {
+                    $methodNotAllowed = true;
+                    continue; // URI matches, but method is wrong. Keep looking.
+                }
+
                 // Extract matched parameters (e.g., 'id' => 5)
                 $parameters = [];
                 foreach ($matches as $key => $value) {
@@ -166,6 +169,10 @@ class Router
                     public function send() {}
                 };
             }
+        }
+
+        if ($methodNotAllowed) {
+            abort(405, 'Request method not supported for this route.');
         }
 
         // If loop finishes without matching any route, throw a 404 Not Found exception
