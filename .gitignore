@@ -1,0 +1,9 @@
+/storage/log/*
+!/storage/log/.gitkeep
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/session/*
+!/storage/session/.gitkeep
+/storage/upload/*
+!/storage/upload/.gitkeep
+/.env

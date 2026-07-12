@@ -1,0 +1,105 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * KitePHP CLI
+ */
+
+if (php_sapi_name() !== 'cli') {
+    die("Kite CLI must be run from the command line.");
+}
+
+require __DIR__ . '/core/Autoloader.php';
+
+$autoloader = new \Kite\Core\Autoloader();
+$autoloader->addNamespace('Kite\Core\\', __DIR__ . '/core');
+$autoloader->addNamespace('App\\Controller\\', __DIR__ . '/app/controller');
+$autoloader->addNamespace('App\\Model\\', __DIR__ . '/app/model');
+$autoloader->addNamespace('App\\Middleware\\', __DIR__ . '/app/middleware');
+$autoloader->addNamespace('App\\Service\\', __DIR__ . '/app/service');
+$autoloader->addNamespace('App\\', __DIR__ . '/app');
+$autoloader->register();
+
+// Load global helpers
+require __DIR__ . '/helper/functions.php';
+
+// Bootstrap minimal app
+\Kite\Core\Env::load(__DIR__ . '/.env');
+
+$command = $argv[1] ?? 'help';
+
+switch ($command) {
+    case 'serve':
+        $host = $argv[2] ?? '127.0.0.1';
+        $port = $argv[3] ?? '8000';
+        echo "Starting KitePHP development server at http://{$host}:{$port}\n";
+        echo "Press Ctrl+C to stop.\n";
+        passthru("php -S {$host}:{$port} -t public/ public/index.php");
+        break;
+
+    case 'make:controller':
+        $name = $argv[2] ?? null;
+        if (!$name) {
+            echo "Error: Controller name required.\n";
+            exit(1);
+        }
+        $path = __DIR__ . "/app/controller/{$name}.php";
+        if (file_exists($path)) {
+            echo "Error: Controller already exists.\n";
+            exit(1);
+        }
+        $content = "<?php\n\nnamespace App\\Controller;\n\nuse Kite\\Core\\Request;\n\nclass {$name}\n{\n    public function index(Request \$request)\n    {\n        return view('index');\n    }\n}\n";
+        file_put_contents($path, $content);
+        echo "Controller {$name} created successfully.\n";
+        break;
+
+    case 'make:model':
+        $name = $argv[2] ?? null;
+        if (!$name) {
+            echo "Error: Model name required.\n";
+            exit(1);
+        }
+        $path = __DIR__ . "/app/model/{$name}.php";
+        if (file_exists($path)) {
+            echo "Error: Model already exists.\n";
+            exit(1);
+        }
+        $content = "<?php\n\nnamespace App\\Model;\n\nclass {$name}\n{\n    // \n}\n";
+        file_put_contents($path, $content);
+        echo "Model {$name} created successfully.\n";
+        break;
+        
+    case 'make:view':
+        $name = $argv[2] ?? null;
+        if (!$name) {
+            echo "Error: View name required.\n";
+            exit(1);
+        }
+        $filename = str_replace('.', '/', $name) . '.php';
+        $path = __DIR__ . "/resource/view/{$filename}";
+        
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
+        if (file_exists($path)) {
+            echo "Error: View already exists.\n";
+            exit(1);
+        }
+        $content = "<div>\n    <!-- {$name} view -->\n</div>\n";
+        file_put_contents($path, $content);
+        echo "View {$name} created successfully.\n";
+        break;
+
+    case 'help':
+    default:
+        echo "KitePHP CLI\n\n";
+        echo "Available commands:\n";
+        echo "  serve [host] [port]      Start the development server\n";
+        echo "  make:controller [name]   Create a new controller class\n";
+        echo "  make:model [name]        Create a new model class\n";
+        echo "  make:view [name]         Create a new view file\n";
+        echo "  help                     Show this help message\n";
+        break;
+}
