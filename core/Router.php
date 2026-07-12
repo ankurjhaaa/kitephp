@@ -66,7 +66,7 @@ class Router
     public static function route(string $name, array $parameters = [])
     {
         if (!isset(self::$namedRoutes[$name])) {
-            return '';
+            abort(500, "Route [{$name}] not defined.");
         }
 
         $uri = self::$namedRoutes[$name];

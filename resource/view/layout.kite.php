@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php echo seo(['title' => $title ?? 'KitePHP App']); ?>
+    {!! seo(['title' => $title ?? 'KitePHP App']) !!}
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 2rem; background: #f9fafb; color: #111827; transition: opacity 0.2s; }
         nav { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; }
@@ -16,22 +16,22 @@
         button { padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #1d4ed8; }
     </style>
-    <script src="<?php echo asset('kite.js'); ?>"></script>
+    <script src="{{ asset('kite.js') }}"></script>
 </head>
 <body>
     <div class="container">
         <nav>
-            <a href="<?php echo route('home'); ?>" kite:navigate="home">Home</a>
-            <a href="<?php echo route('about'); ?>" kite:navigate="about">About</a>
+            <a href="{{ route('home') }}" kite:navigate="home">Home</a>
+            <a href="{{ route('about') }}" kite:navigate="about">About</a>
         </nav>
 
-        <?php if ($msg = session('_flash')['message'] ?? null): ?>
-            <div class="alert"><?php echo e($msg); ?></div>
+        @if ($msg = session('_flash')['message'] ?? null)
+            <div class="alert">{{ $msg }}</div>
             <?php session()->put('_flash', []); // Clear flash ?>
-        <?php endif; ?>
+        @endif
 
         <main>
-            <?php \Kite\Core\View::yieldSection('content'); ?>
+            @yield('content')
         </main>
     </div>
 </body>

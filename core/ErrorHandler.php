@@ -20,6 +20,11 @@ class ErrorHandler
 
     public static function handleException(\Throwable $exception)
     {
+        // Clear all output buffers to ensure only the error page is shown
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         $code = $exception->getCode();
         
         // Map common codes to HTTP statuses, default to 500

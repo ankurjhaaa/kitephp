@@ -6,6 +6,14 @@
 
 define('KITE_START', microtime(true));
 
+// Handle static files for PHP built-in server
+if (php_sapi_name() === 'cli-server') {
+    $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+    if ($path && is_file($path)) {
+        return false;
+    }
+}
+
 // Load Autoloader
 require __DIR__ . '/../core/Autoloader.php';
 
