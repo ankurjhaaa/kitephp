@@ -16,6 +16,8 @@ KitePHP is a minimalist, lightning-fast PHP micro-framework designed to blur the
 - **Django-Style Models:** Define your database schemas directly inside your Models. 
 - **Auto Migrations:** Run `php kite migrate` and the database structure automatically syncs with your code.
 - **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade, with `@if`, `@foreach`, and automatic `<kite-var>` reactivity wrappers.
+- **Auto-SEO Engine:** Dynamically injects and swaps Meta/OpenGraph tags during SPA navigation automatically.
+- **Built-in Security:** Global CSRF validation and simple route middleware for Authentication.
 - **Secure Query Builder:** Fluent PDO prepared statements and built-in Pagination (`->paginate()`).
 - **Built-in TailwindCSS:** Designed to look beautiful out of the box.
 
@@ -100,43 +102,52 @@ Routes are simple and fast. They are defined in `route/url.php`.
 ```php
 get('/', 'HomeController@index')->name('home');
 post('/users/save', 'UserController@save')->name('users.save');
+
+// Protect routes with built-in Middleware
+get('/admin', 'AdminController@index')->middleware('auth');
 ```
 
-Controllers handle requests via an injected `Request` object. Validation is Laravel-inspired and automatically redirects back with flashed errors if it fails.
+Controllers handle requests via an injected `Request` object. Validation is Laravel-inspired and automatically redirects back with flashed errors if it fails. You also have full access to the `auth()` helper.
 
 ```php
 namespace App\Controller;
 use Kite\Core\Request;
 
 class UserController {
-    public function save(Request $request) {
-        $validated = $request->validate([
-            'name' => 'required|min:3|max:50',
-            'email' => 'required|email|unique:users,email'
+    public function login(Request $request) {
+        $credentials = $request->validate([
+            'email' => 'required',
+            'password' => 'required'
         ]);
         
-        db('users')->insert($validated);
-        session()->flash('success', 'User saved successfully!');
+        if (auth()->attempt($credentials)) {
+            return redirect(route('admin'));
+        }
         
-        return redirect(route('users.index'));
+        session()->flash('error', 'Invalid Credentials');
+        return redirect('/login');
     }
 }
 ```
 
 ---
 
-## 🎨 Views (Kite Engine)
+## 🎨 Views (Kite Engine) & Components
 
 KitePHP uses `.kite.php` extensions. It provides clean syntax, layout extending, and CSRF protection.
 
+### 1. View Directives
 ```html
 @extends('layout')
+
+@seo('title', 'My Dashboard')
+@seo('image', 'banner.png')
 
 @section('content')
     <h1>Dashboard</h1>
     
-    @if($user->isAdmin)
-        <p>Secure Admin Data</p>
+    @if(auth()->check())
+        <p>Welcome, {{ auth()->user()->name }}</p>
     @endif
     
     <ul>
@@ -144,16 +155,23 @@ KitePHP uses `.kite.php` extensions. It provides clean syntax, layout extending,
         <li>{{ $item }}</li>
     @endforeach
     </ul>
+    
+    <!-- View Components -->
+    @include('components.card', ['title' => 'My Component Title'])
 
     <form method="POST">
         @csrf
         <input type="text" name="email" value="{{ old('email') }}">
-        @error('email')
-            <p class="error">{{ $message }}</p>
-        @enderror
     </form>
 @endsection
 ```
+
+### 2. Auto-SEO Engine
+Since KitePHP acts as a Single Page Application, standard Meta tags break. KitePHP fixes this with an Auto-SEO engine.
+
+Simply place `{!! seo()->render() !!}` in your `<head>`.
+Whenever you navigate, the engine automatically extracts the `@seo` directives from the new page and effortlessly swaps the DOM's meta tags!
+
 
 ---
 

@@ -265,6 +265,13 @@ const Kite = {
             document.title = doc.title;
         }
 
+        // Swap Meta and Canonical tags for SEO
+        const oldMetas = document.head.querySelectorAll('meta, link[rel="canonical"]');
+        oldMetas.forEach(tag => tag.remove());
+        
+        const newMetas = doc.head.querySelectorAll('meta, link[rel="canonical"]');
+        newMetas.forEach(tag => document.head.appendChild(tag.cloneNode(true)));
+
         Array.from(document.body.attributes).forEach(attr => document.body.removeAttribute(attr.name));
         Array.from(doc.body.attributes).forEach(attr => document.body.setAttribute(attr.name, attr.value));
 

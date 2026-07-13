@@ -119,7 +119,33 @@ KitePHP acts as a Single Page Application without any build tools, and includes 
 - **Conditional Rendering:** Use `<div kite:show="count > 0">`. This will instantly hide/show the element purely on the client side based on the reactive state.
 - **Client-Side Functions:** Use `kite:click="count++"` or `kite:click="alert('Hello')"` to execute Javascript logic directly in the reactive state context.
 
-## 7. Global Helpers
+## 7. Security & Middleware
+KitePHP provides global CSRF validation on all POST/PUT/DELETE requests.
+- You can protect routes by chaining middleware: `get('/admin', 'AdminController@index')->middleware('auth');`
+- If you need a custom middleware, create it in `App\Middleware` and define its `handle(Request $request, Closure $next)` method.
+
+## 8. Authentication (Auth System)
+Use the global `auth()` helper to manage user sessions.
+- `auth()->attempt(['email' => $email, 'password' => $pwd])`: Logs user in if password matches hash.
+- `auth()->user()`: Returns the currently authenticated user object (from DB).
+- `auth()->check()`: Returns true if user is logged in.
+- `auth()->logout()`: Clears the session.
+
+## 9. Auto-SEO Engine
+KitePHP has a built-in SEO engine that dynamically swaps tags during SPA navigation.
+- In your layout `<head>`, place `{!! seo()->render() !!}`.
+- In any view, declare tags at the top:
+  ```php
+  @seo('title', 'Page Title')
+  @seo('description', 'Meta description')
+  @seo('image', 'https://example.com/banner.jpg')
+  ```
+
+## 10. View Components
+You can pass data to reusable partials using `@include`.
+- `@include('components.card', ['title' => 'My Title'])`
+
+## 11. Global Helpers
 - `view('view.name', ['key' => 'value'])`
 - `route('route.name')`
 - `redirect('/url')`
@@ -128,6 +154,8 @@ KitePHP acts as a Single Page Application without any build tools, and includes 
 - `session()->flash('key', 'msg')`
 - `db()`
 - `csrf_token()`
+- `auth()`
+- `seo()`
 
 ## Styling
 - **Tailwind CSS** is loaded via the local `public/tailwind.js` file.
