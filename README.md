@@ -125,17 +125,17 @@ php kite migrate
 Interact with your database securely.
 
 ```php
-$users = db()->table('users')->where('status', 'active')->get();
-$user = db()->table('users')->find(1);
+$users = db('users')->where('status', 'active')->get();
+$user = db('users')->find(1);
 
 // Insert
-db()->table('users')->insert(['name' => 'John']);
+db('users')->insert(['name' => 'John']);
 
 // Update
-db()->table('users')->where('id', 1)->update(['name' => 'Jane']);
+db('users')->where('id', 1)->update(['name' => 'Jane']);
 
 // Delete
-db()->table('users')->where('id', 1)->delete();
+db('users')->where('id', 1)->delete();
 ```
 
 ---

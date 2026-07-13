@@ -39,7 +39,8 @@ class Session
     }
 
     /**
-     * Get a value from the session.
+     * Get a value from the session (including flash messages).
+     * Flash messages are automatically cleared upon retrieval.
      * 
      * @param string $key The session key
      * @param mixed $default The fallback value if the key doesn't exist
@@ -47,7 +48,24 @@ class Session
     public static function get(string $key, $default = null)
     {
         self::instance();
+        
+        // Check flash messages first
+        if (isset($_SESSION['_flash'][$key])) {
+            $value = $_SESSION['_flash'][$key];
+            unset($_SESSION['_flash'][$key]);
+            return $value;
+        }
+
         return $_SESSION[$key] ?? $default;
+    }
+
+    /**
+     * Check if a key exists in the session or flash data.
+     */
+    public function has(string $key): bool
+    {
+        self::instance();
+        return isset($_SESSION[$key]) || isset($_SESSION['_flash'][$key]);
     }
 
     /**

@@ -57,9 +57,13 @@
             <div id="intro" class="mb-10 pt-2">
                 <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3">The Full Stack PHP Micro-Framework</h1>
                 <p class="text-sm text-gray-400 leading-relaxed mb-5 max-w-2xl">KitePHP gives you the developer experience of Laravel and the speed of a React SPA, without the heavy setup. It comes with built-in TailwindCSS, smart migrations, and a zero-config SPA engine.</p>
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <a href="#models" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded transition-colors">Explore Models</a>
                     <a href="#kitejs" class="px-4 py-2 bg-gray-800 border border-gray-700 hover:bg-gray-700 text-gray-300 text-sm font-semibold rounded transition-colors">Learn KiteJS</a>
+                    <a href="{{ route('users.index') }}" kite:navigate="users" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded shadow-lg shadow-green-900/20 transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Live CRUD Demo
+                    </a>
                 </div>
             </div>
 
@@ -153,12 +157,12 @@
             <!-- Query Builder -->
             <section id="querybuilder" class="mb-10 scroll-mt-20">
                 <h2 class="text-xl font-bold text-gray-100 mb-3 flex items-center gap-2">🔍 Query Builder</h2>
-<pre class="bg-[#0d1117] border border-gray-800 rounded-lg p-4 text-xs font-mono overflow-x-auto text-gray-300 leading-normal mb-4"><code><span class="text-yellow-300">$users</span> = <span class="text-purple-400">db</span>()-&gt;<span class="text-purple-400">table</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'status'</span>, <span class="text-green-400">'active'</span>)-&gt;<span class="text-purple-400">get</span>();
-<span class="text-yellow-300">$user</span> = <span class="text-purple-400">db</span>()-&gt;<span class="text-purple-400">table</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">find</span>(<span class="text-purple-400">1</span>);
+<pre class="bg-[#0d1117] border border-gray-800 rounded-lg p-4 text-xs font-mono overflow-x-auto text-gray-300 leading-normal mb-4"><code><span class="text-yellow-300">$users</span> = <span class="text-purple-400">db</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'status'</span>, <span class="text-green-400">'active'</span>)-&gt;<span class="text-purple-400">get</span>();
+<span class="text-yellow-300">$user</span> = <span class="text-purple-400">db</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">find</span>(<span class="text-purple-400">1</span>);
 
-<span class="text-purple-400">db</span>()-&gt;<span class="text-purple-400">table</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">insert</span>([<span class="text-green-400">'name'</span> =&gt; <span class="text-green-400">'John'</span>]);
-<span class="text-purple-400">db</span>()-&gt;<span class="text-purple-400">table</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'id'</span>, <span class="text-purple-400">1</span>)-&gt;<span class="text-purple-400">update</span>([<span class="text-green-400">'name'</span> =&gt; <span class="text-green-400">'Jane'</span>]);
-<span class="text-purple-400">db</span>()-&gt;<span class="text-purple-400">table</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'id'</span>, <span class="text-purple-400">1</span>)-&gt;<span class="text-purple-400">delete</span>();</code></pre>
+<span class="text-purple-400">db</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">insert</span>([<span class="text-green-400">'name'</span> =&gt; <span class="text-green-400">'John'</span>]);
+<span class="text-purple-400">db</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'id'</span>, <span class="text-purple-400">1</span>)-&gt;<span class="text-purple-400">update</span>([<span class="text-green-400">'name'</span> =&gt; <span class="text-green-400">'Jane'</span>]);
+<span class="text-purple-400">db</span>(<span class="text-green-400">'users'</span>)-&gt;<span class="text-purple-400">where</span>(<span class="text-green-400">'id'</span>, <span class="text-purple-400">1</span>)-&gt;<span class="text-purple-400">delete</span>();</code></pre>
             </section>
 
             <!-- KiteJS -->

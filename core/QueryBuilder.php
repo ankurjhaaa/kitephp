@@ -3,6 +3,8 @@
 namespace Kite\Core;
 
 use PDO;
+use Kite\Core\Request;
+use Kite\Core\Paginator;
 
 /**
  * A lightweight, fluent SQL Query Builder.
@@ -113,6 +115,41 @@ class QueryBuilder
         $stmt = $this->pdo->prepare($this->buildSelectQuery());
         $stmt->execute($this->bindings);
         return $stmt->fetchAll(); // Returns an array of objects
+    }
+
+    /**
+     * Paginate the given query.
+     * @param int $perPage The number of items to show per page
+     */
+    public function paginate(int $perPage = 15): Paginator
+    {
+        // 1. Get total count
+        $countQuery = "SELECT COUNT(*) FROM {$this->table}";
+        if (!empty($this->wheres)) {
+            $conditions = [];
+            foreach ($this->wheres as $where) {
+                $conditions[] = "{$where['column']} {$where['operator']} ?";
+            }
+            $countQuery .= " WHERE " . implode(' AND ', $conditions);
+        }
+        $stmt = $this->pdo->prepare($countQuery);
+        $stmt->execute($this->bindings);
+        $total = (int) $stmt->fetchColumn();
+
+        // 2. Get current page from the global request
+        $request = Request::capture();
+        $page = (int) $request->input('page', 1);
+        if ($page < 1) $page = 1;
+
+        // 3. Apply limit and offset to the main query builder
+        $offset = ($page - 1) * $perPage;
+        $this->limit = " LIMIT {$perPage} OFFSET {$offset}";
+
+        // 4. Fetch the actual items
+        $items = $this->get();
+
+        // 5. Return a Paginator instance
+        return new Paginator($items, $total, $perPage, $page, $request);
     }
 
     /**

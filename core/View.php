@@ -109,13 +109,13 @@ class View
             $content = preg_replace('/{!!\s*(.+?)\s*!!}/', '<?php echo $1; ?>', $content);
             
             // Compile Control Structures (If / Else)
-            $content = preg_replace('/@if\s*\((.*)\)/', '<?php if ($1): ?>', $content);
-            $content = preg_replace('/@elseif\s*\((.*)\)/', '<?php elseif ($1): ?>', $content);
+            $content = preg_replace('/@if\s*\(((?:[^()]+|\((?1)\))*)\)/', '<?php if ($1): ?>', $content);
+            $content = preg_replace('/@elseif\s*\(((?:[^()]+|\((?1)\))*)\)/', '<?php elseif ($1): ?>', $content);
             $content = preg_replace('/@else/', '<?php else: ?>', $content);
             $content = preg_replace('/@endif/', '<?php endif; ?>', $content);
             
             // Compile Loops (Foreach)
-            $content = preg_replace('/@foreach\s*\((.*)\)/', '<?php foreach ($1): ?>', $content);
+            $content = preg_replace('/@foreach\s*\(((?:[^()]+|\((?1)\))*)\)/', '<?php foreach ($1): ?>', $content);
             $content = preg_replace('/@endforeach/', '<?php endforeach; ?>', $content);
 
             // Compile Layout Directives
