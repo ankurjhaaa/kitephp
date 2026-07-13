@@ -1,16 +1,23 @@
-# 🪁 KitePHP - The Full Stack PHP Micro-Framework
+<div align="center">
+  <h1>🪁 KitePHP</h1>
+  <p><b>The Full Stack PHP Micro-Framework</b></p>
+  <p><i>Developer experience of Laravel. Speed of a React SPA. Zero heavy setup.</i></p>
+</div>
 
-KitePHP gives you the developer experience of Laravel and the blazing speed of a React SPA, without the heavy setup. It comes with built-in TailwindCSS, smart migrations, a query builder, and a zero-config Single Page Application engine.
+---
+
+KitePHP is a minimalist, lightning-fast PHP micro-framework designed to blur the lines between Backend and Frontend. It comes with built-in TailwindCSS, smart database migrations, a secure query builder, and **KiteJS**—a zero-config Reactive SPA engine.
 
 ## ✨ Features
 
-- **Zero-Config SPA Engine (KiteJS):** Fetch HTML via AJAX and update the DOM and browser history seamlessly.
-- **Django-Style Models:** Define schemas directly inside models. No separate migration files required.
-- **Auto Migrations:** Just run `php kite migrate` and the database structure automatically syncs with your models.
-- **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade, with `@error` and `old()` directives.
-- **Secure Query Builder:** PDO prepared statements and built-in Pagination (`->paginate()`).
-- **Built-in TailwindCSS:** Designed to look beautiful from the start with a customized dark mode UI.
-- **Minimalist & Lightweight:** No bloat, incredibly fast, and easy to understand.
+- **KiteJS (Reactive SPA Engine):** Fetch HTML via AJAX, update the DOM without reloads, and add Alpine-like reactivity instantly.
+- **Zero-Config Reactivity:** Declare state in HTML with `kite:data`. PHP parses it as default variables, and JS auto-binds it. No setup required.
+- **Debounced Live Forms:** Add `kite:live.debounce.300ms` to any form for instant live search without writing a single line of JS.
+- **Django-Style Models:** Define your database schemas directly inside your Models. 
+- **Auto Migrations:** Run `php kite migrate` and the database structure automatically syncs with your code.
+- **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade, with `@if`, `@foreach`, and automatic `<kite-var>` reactivity wrappers.
+- **Secure Query Builder:** Fluent PDO prepared statements and built-in Pagination (`->paginate()`).
+- **Built-in TailwindCSS:** Designed to look beautiful out of the box.
 
 ---
 
@@ -34,46 +41,84 @@ kitephp/
 
 ---
 
-## 🛣️ Routing
+## ⚡ SPA & Reactive Engine (KiteJS)
 
-Routes are registered in `route/url.php`.
+KiteJS is what makes KitePHP special. It acts as both a Pjax-style SPA navigator and a lightweight AlpineJS-style reactive engine.
 
-```php
-// Basic GET and POST routes
-get('/', 'HomeController@index')->name('home');
-post('/login', 'AuthController@login')->name('login.post');
+### 1. Instant Navigation & Forms
+Convert any traditional web page into a Single Page Application instantly.
 
-// Route parameters
-get('/user/{id}', function($id) {
-    return "User ID: " . $id;
-});
+```html
+<!-- Instant Navigation (No full page reload) -->
+<a href="/about" kite:navigate>About Us</a>
+
+<!-- AJAX Form Submission -->
+<form action="/login" method="POST" kite:submit>
+    @csrf
+    <input type="email" name="email">
+    <button type="submit">Login</button>
+</form>
+```
+
+### 2. Zero-Config Reactivity & Auto-Binding
+Define your state using `kite:data`. KitePHP will extract this state into backend PHP variables automatically, and KiteJS will bind it on the frontend.
+
+```html
+<div kite:data="{ count: 0, name: '', showDetails: false }">
+    
+    <!-- Auto-Bind Inputs: Matches name="name" with state.name -->
+    <input type="text" name="name" placeholder="Type your name...">
+    
+    <!-- Auto-Updating Text: PHP auto-wraps this for KiteJS reactivity -->
+    <h1>Hello, {{ $name }}</h1>
+
+    <!-- Client-Side State Toggling -->
+    <button kite:click="showDetails = !showDetails">Toggle Details</button>
+    
+    <!-- Conditional Frontend Rendering -->
+    <div kite:show="showDetails">
+        <p>This is hidden/shown instantly without asking the server!</p>
+    </div>
+</div>
+```
+
+### 3. Live Forms & Debouncing (HTMX style)
+Want a live search bar? Add `kite:live` to any form. KiteJS will track your typing, maintain your cursor focus, and silently submit the form via AJAX when you stop typing.
+
+```html
+<form action="/users" method="GET" kite:submit kite:live.debounce.500ms>
+    <input type="text" name="search" placeholder="Live search users...">
+</form>
 ```
 
 ---
 
-## ⚙️ Controllers & Request
+## 🛣️ Routing & Controllers
 
-Controllers handle incoming HTTP requests. The `Request` object is injected automatically.
+Routes are simple and fast. They are defined in `route/url.php`.
+
+```php
+get('/', 'HomeController@index')->name('home');
+post('/users/save', 'UserController@save')->name('users.save');
+```
+
+Controllers handle requests via an injected `Request` object. Validation is Laravel-inspired and automatically redirects back with flashed errors if it fails.
 
 ```php
 namespace App\Controller;
 use Kite\Core\Request;
 
 class UserController {
-    public function store(Request $request) {
+    public function save(Request $request) {
         $validated = $request->validate([
             'name' => 'required|min:3|max:50',
             'email' => 'required|email|unique:users,email'
         ]);
         
-        db('users')->insert([
-            'name' => $validated['name'],
-            'email' => $validated['email']
-        ]);
+        db('users')->insert($validated);
+        session()->flash('success', 'User saved successfully!');
         
-        session()->flash('success', 'Created successfully!');
-        
-        return redirect(route('home'));
+        return redirect(route('users.index'));
     }
 }
 ```
@@ -82,16 +127,16 @@ class UserController {
 
 ## 🎨 Views (Kite Engine)
 
-KitePHP uses `.kite.php` extensions for templates, providing a clean syntax similar to Laravel Blade.
+KitePHP uses `.kite.php` extensions. It provides clean syntax, layout extending, and CSRF protection.
 
 ```html
 @extends('layout')
 
 @section('content')
-    <h1>Hello {{ $user->name }}</h1>
+    <h1>Dashboard</h1>
     
     @if($user->isAdmin)
-        <p>Admin access</p>
+        <p>Secure Admin Data</p>
     @endif
     
     <ul>
@@ -104,7 +149,7 @@ KitePHP uses `.kite.php` extensions for templates, providing a clean syntax simi
         @csrf
         <input type="text" name="email" value="{{ old('email') }}">
         @error('email')
-            <p>{{ $message }}</p>
+            <p class="error">{{ $message }}</p>
         @enderror
     </form>
 @endsection
@@ -112,103 +157,49 @@ KitePHP uses `.kite.php` extensions for templates, providing a clean syntax simi
 
 ---
 
-## 🪄 Models & Migrations
+## 🪄 Models, Schemas & Query Builder
 
-Define schemas directly in `database/models.php`.
+Unlike other frameworks, schemas are defined directly inside your models (`database/models.php`). No separate migration files to manage.
 
 ```php
-class Product extends Model {
-    public static function schema(): array {
+class User extends Model {
+    public static function fields(): array {
         return [
-            'name'  => Field::string()->nullable(),
-            'slug'  => Field::string()->unique(),
-            'price' => Field::integer()->default('0'),
+            'name'     => Field::string(['max_length' => 255]),
+            'email'    => Field::string(['max_length' => 255, 'unique' => true]),
+            'password' => Field::string(['max_length' => 255]),
         ];
     }
 }
 ```
 
-To automatically sync your database schema, just run:
+Sync your database automatically:
 ```bash
 php kite migrate
 ```
 
----
-
-## 🔍 Query Builder
-
-Interact with your database securely.
-
+Use the secure Query Builder for complex logic:
 ```php
-$users = db('users')->where('status', 'active')->get();
-$user = db('users')->find(1);
-
-// Pagination
-$paginatedUsers = db('users')->orderBy('id', 'DESC')->paginate(10);
-// Render links in view: {!! $paginatedUsers->links() !!}
-
-// ORM Relationships (Eloquent Style)
-// Define relations in models using $this->hasMany(), $this->belongsTo(), $this->hasOne()
+// Active Record / ORM
 $user = User::objects()->find(1);
-$posts = $user->posts; // Magic property automatically calls $user->posts()!
+$posts = $user->posts; // Dynamic relationships
 
-// Insert
-db('users')->insert(['name' => 'John']);
+// Fluent Query Builder
+$users = db('users')->where('status', 'active')->orderBy('id', 'DESC')->get();
 
-// Update
-db('users')->where('id', 1)->update(['name' => 'Jane']);
-
-// Delete
-db('users')->where('id', 1)->delete();
-```
-
----
-
-## ⚡ SPA & Reactive Engine (KiteJS)
-
-KiteJS is a zero-config engine that provides lightning-fast SPA navigation and Alpine-like client-side reactivity without the extra bloat.
-
-### Instant Navigation & Forms
-```html
-<!-- Instant Navigation -->
-<a href="/about" kite:navigate>About Us</a>
-
-<!-- AJAX Form Submission -->
-<form action="/login" method="POST" kite:submit>
-    @csrf
-    <input type="email" name="email">
-    <button type="submit">Login</button>
-</form>
-```
-
-### Zero-Config Reactivity
-Define state, bind inputs automatically by `name`, and update text automatically via `{{ $var }}`.
-
-```html
-<!-- 1. Define State (PHP auto-extracts these as defaults!) -->
-<div kite:data="{ count: 0, name: '' }">
-    
-    <!-- 2. Auto-Bind Inputs (Matches name="name" with state.name automatically) -->
-    <input type="text" name="name" placeholder="Type your name...">
-    
-    <!-- 3. Auto-Updating Text (PHP auto-wraps this for KiteJS!) -->
-    <h1>Hello, {{ $name }}</h1>
-    <p>Button clicked {{ $count }} times.</p>
-
-    <!-- 4. Client-side actions -->
-    <button kite:click="count++">Increment</button>
-</div>
+// Pagination built-in
+$paginated = db('users')->paginate(10);
 ```
 
 ---
 
 ## 🛠️ Helper Functions
 
-- `view('name', $data)` - Renders a template
-- `route('name')` - Gets named URL
+- `view('name', $data)` - Render a template
+- `route('name', ['id' => 1])` - Get a named URL
 - `redirect('/url')` - Redirect user
-- `db()` - Query builder instance
+- `db('table')` - Query builder instance
 - `session()` - Session manager
 - `abort(404)` - Throw HTTP error
-- `asset('file.js')` - Load public asset URL
+- `asset('file.js')` - Load public asset
 - `csrf_token()` - Get CSRF token value

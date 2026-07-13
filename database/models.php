@@ -14,6 +14,7 @@ class User extends Model
         return [
             'name' => Field::string(['max_length' => 255]),
             'email' => Field::string(['max_length' => 255, 'unique' => true]),
+            'password' => Field::string(['max_length' => 255]),
         ];
     }
 }

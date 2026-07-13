@@ -40,10 +40,7 @@ class UserController {
         ]);
 
         // Insert into DB
-        db('users')->insert([
-            'name' => $validated['name'],
-            'email' => $validated['email']
-        ]);
+        db('users')->insert($validated);
 
         session()->flash('success', 'User added!');
         return redirect(route('home'));
@@ -55,7 +52,7 @@ class UserController {
 KitePHP uses a Django-style auto-migration system. Do NOT create Laravel-style migration files. Define the schema directly in the model class inside `database/models.php`.
 ```php
 class Post extends Model {
-    public static function schema(): array {
+    public static function fields(): array {
         return [
             'user_id' => Field::foreignId('users', 'id', ['onDelete' => 'CASCADE']),
             'title'   => Field::string(),
@@ -70,13 +67,8 @@ Use the global `db()` helper for all database operations. It uses PDO prepared s
 
 **Filtering (Selects):**
 ```php
-// Basic Select
-$users = db('users')->where('status', 'active')->get(); // Returns array of objects
-
-// First result only
-$user = db('users')->where('id', 1)->first(); // Returns a single object
-
-// Advanced Filtering (>, <, !=)
+$users = db('users')->where('status', 'active')->get(); // Array of objects
+$user = db('users')->where('id', 1)->first(); // Single object
 $expensiveItems = db('products')->where('price', '>', 1000)->get();
 
 // Joins (Raw SQL)
@@ -86,36 +78,18 @@ $posts = db('posts')
     ->get();
 
 // ORM Relationships (Eloquent Style)
-// In Model:
-// public function posts() { return $this->hasMany(Post::class, 'user_id'); }
-// public function user() { return $this->belongsTo(User::class, 'user_id'); }
 $user = User::objects()->first();
 $userPosts = $user->posts; // Magic property triggers method automatically
 
-// Chaining
-$query = db('users')
-    ->where('role', 'admin')
-    ->orderBy('created_at', 'DESC')
-    ->limit(10)
-    ->get();
-
 // Pagination
 $users = db('users')->orderBy('id', 'DESC')->paginate(10);
-// In the view, render links: {!! $users->links() !!}
+// In the view: {!! $users->links() !!}
 ```
 
 **Insert, Update, Delete:**
 ```php
-// Insert (Returns new ID)
-$insertId = db('users')->insert([
-    'name' => 'John', 
-    'role' => 'user'
-]);
-
-// Update (Returns affected rows count)
+$insertId = db('users')->insert(['name' => 'John', 'role' => 'user']);
 db('users')->where('id', $insertId)->update(['role' => 'admin']);
-
-// Delete
 db('users')->where('id', $insertId)->delete();
 ```
 
@@ -133,17 +107,17 @@ All views MUST be in `resource/view/` and end with `.kite.php`.
 ## 6. SPA & Reactive Engine (KiteJS)
 KitePHP acts as a Single Page Application without any build tools, and includes a built-in Alpine-like Reactive Engine.
 
-**SPA Navigation:**
+**SPA Navigation & Live Forms:**
 - **Navigation without reload:** `<a href="/about" kite:navigate>About</a>`
 - **AJAX Form Submission:** `<form action="/login" method="POST" kite:submit>`
-  - When `kite:submit` is present, the form submits via AJAX.
-  - If the controller returns a `redirect()`, KiteJS will automatically fetch the new page via AJAX and update the DOM!
+- **Live Search / Debounce:** `<form action="/search" method="GET" kite:submit kite:live.debounce.500ms>`. This automatically submits the form silently 500ms after the user stops typing, replacing the DOM without losing input focus.
 
-**Reactive State & Auto-Binding:**
+**Reactive State & Auto-Binding (Zero-Config):**
 - **Define State & PHP Defaults:** Use `kite:data="{ count: 0, search: '' }"` on a container. PHP will automatically parse this and inject these as default variables into the view!
 - **Auto-Update Text:** Simply write `{{ $count }}`. PHP automatically wraps this in `<kite-var>`, and `kite.js` updates it instantly when the state changes. NO `kite:text` needed!
 - **Auto-Bind Inputs:** Simply use the `name` attribute matching the state key: `<input type="text" name="search">`. KiteJS will automatically establish two-way binding. NO `kite:model` needed!
-- **Client-Side Functions:** Use `kite:click="count++"` or `kite:function="doSomething()"` to execute Javascript logic directly in the reactive state context.
+- **Conditional Rendering:** Use `<div kite:show="count > 0">`. This will instantly hide/show the element purely on the client side based on the reactive state.
+- **Client-Side Functions:** Use `kite:click="count++"` or `kite:click="alert('Hello')"` to execute Javascript logic directly in the reactive state context.
 
 ## 7. Global Helpers
 - `view('view.name', ['key' => 'value'])`
@@ -153,6 +127,7 @@ KitePHP acts as a Single Page Application without any build tools, and includes 
 - `session()->set('key', 'val')`
 - `session()->flash('key', 'msg')`
 - `db()`
+- `csrf_token()`
 
 ## Styling
 - **Tailwind CSS** is loaded via the local `public/tailwind.js` file.
