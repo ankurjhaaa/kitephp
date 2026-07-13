@@ -18,6 +18,7 @@ KitePHP is a minimalist, lightning-fast PHP micro-framework designed to blur the
 - **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade, with `@if`, `@foreach`, and automatic `<kite-var>` reactivity wrappers.
 - **Auto-SEO Engine:** Dynamically injects and swaps Meta/OpenGraph tags during SPA navigation automatically.
 - **Built-in Security:** Global CSRF validation and simple route middleware for Authentication.
+- **Django-Style Permissions (RBAC):** Built-in Role-Based Access Control (`auth()->hasPerm()`, `auth()->inGroup()`, `@can`).
 - **Secure Query Builder:** Fluent PDO prepared statements and built-in Pagination (`->paginate()`).
 - **Built-in TailwindCSS:** Designed to look beautiful out of the box.
 
@@ -105,6 +106,7 @@ post('/users/save', 'UserController@save')->name('users.save');
 
 // Protect routes with built-in Middleware
 get('/admin', 'AdminController@index')->middleware('auth');
+get('/admin/users/delete', 'UserController@delete')->middleware('permission:delete_user');
 ```
 
 Controllers handle requests via an injected `Request` object. Validation is Laravel-inspired and automatically redirects back with flashed errors if it fails. You also have full access to the `auth()` helper.
@@ -150,6 +152,10 @@ KitePHP uses `.kite.php` extensions. It provides clean syntax, layout extending,
         <p>Welcome, {{ auth()->user()->name }}</p>
     @endif
     
+    @can('delete_user')
+        <button class="btn-danger">Delete User</button>
+    @endcan
+    
     <ul>
     @foreach($items as $item)
         <li>{{ $item }}</li>
@@ -181,15 +187,20 @@ Unlike other frameworks, schemas are defined directly inside your models (`datab
 
 ```php
 class User extends Model {
+    public static string $table = 'users';
+    
     public static function fields(): array {
         return [
             'name'     => Field::string(['max_length' => 255]),
             'email'    => Field::string(['max_length' => 255, 'unique' => true]),
             'password' => Field::string(['max_length' => 255]),
+            'is_superuser' => Field::integer(['default' => 0]),
         ];
     }
 }
 ```
+
+*Note: KitePHP includes all 5 Django-style Auth tables (`auth_groups`, `auth_permissions`, etc.) out of the box in `database/models.php` for instant Role-Based Access Control!*
 
 Sync your database automatically:
 ```bash

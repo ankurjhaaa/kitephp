@@ -52,6 +52,8 @@ class UserController {
 KitePHP uses a Django-style auto-migration system. Do NOT create Laravel-style migration files. Define the schema directly in the model class inside `database/models.php`.
 ```php
 class Post extends Model {
+    public static string $table = 'posts';
+    
     public static function fields(): array {
         return [
             'user_id' => Field::foreignId('users', 'id', ['onDelete' => 'CASCADE']),
@@ -60,6 +62,7 @@ class Post extends Model {
     }
 }
 ```
+*Note: KitePHP includes all 5 Django-style Auth tables (`auth_groups`, `auth_permissions`, etc.) out of the box in `database/models.php` for instant Role-Based Access Control!*
 *Note: To sync the database, instruct the user to run `php kite migrate`.*
 
 ## 4. Query Builder (Filtering & CRUD)
@@ -103,6 +106,7 @@ All views MUST be in `resource/view/` and end with `.kite.php`.
 - CSRF Token: `@csrf` (Use inside all POST forms).
 - Validation Errors: `@error('field') {{ $message }} @enderror`
 - Old Form Input: `{{ old('field', $default) }}`
+- Permissions: `@can('add_post') ... @endcan`
 
 ## 6. SPA & Reactive Engine (KiteJS)
 KitePHP acts as a Single Page Application without any build tools, and includes a built-in Alpine-like Reactive Engine.
@@ -122,6 +126,7 @@ KitePHP acts as a Single Page Application without any build tools, and includes 
 ## 7. Security & Middleware
 KitePHP provides global CSRF validation on all POST/PUT/DELETE requests.
 - You can protect routes by chaining middleware: `get('/admin', 'AdminController@index')->middleware('auth');`
+- You can protect routes with Django-style permissions: `->middleware('permission:delete_user');`
 - If you need a custom middleware, create it in `App\Middleware` and define its `handle(Request $request, Closure $next)` method.
 
 ## 8. Authentication (Auth System)
@@ -129,6 +134,8 @@ Use the global `auth()` helper to manage user sessions.
 - `auth()->attempt(['email' => $email, 'password' => $pwd])`: Logs user in if password matches hash.
 - `auth()->user()`: Returns the currently authenticated user object (from DB).
 - `auth()->check()`: Returns true if user is logged in.
+- `auth()->hasPerm('add_post')`: Checks if user has a permission (direct or via group). Superusers (`is_superuser=1`) always return true.
+- `auth()->inGroup('Editors')`: Checks if user belongs to a specific group.
 - `auth()->logout()`: Clears the session.
 
 ## 9. Auto-SEO Engine
