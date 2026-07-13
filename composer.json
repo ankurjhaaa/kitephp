@@ -11,12 +11,18 @@
             "email": "ankur@echovel.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../framework"
+        }
+    ],
     "require": {
-        "php": "^8.0"
+        "php": "^8.0",
+        "echovel/framework": "*@dev"
     },
     "autoload": {
         "psr-4": {
-            "Kite\\Core\\": "vendor/echovel/kitephp/src/",
             "App\\": "app/",
             "App\\Controller\\": "app/controller/",
             "App\\Middleware\\": "app/middleware/",
@@ -24,7 +30,6 @@
             "Database\\": "database/"
         },
         "files": [
-            "vendor/echovel/kitephp/src/helpers.php",
             "helper/functions.php"
         ]
     },
@@ -36,5 +41,7 @@
     "config": {
         "preferred-install": "dist",
         "sort-packages": true
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

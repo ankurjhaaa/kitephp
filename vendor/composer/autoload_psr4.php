@@ -6,7 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Kite\\Core\\' => array($vendorDir . '/echovel/kitephp/src'),
+    'Kite\\Core\\' => array($vendorDir . '/echovel/framework/src'),
     'Database\\' => array($baseDir . '/database'),
     'App\\Service\\' => array($baseDir . '/app/service'),
     'App\\Middleware\\' => array($baseDir . '/app/middleware'),

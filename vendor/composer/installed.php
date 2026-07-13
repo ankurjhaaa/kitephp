@@ -1,19 +1,28 @@
 <?php return array(
     'root' => array(
         'name' => 'echovel/kitephp',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '49052f5fec281b6c28e708a71308f83ee93d4bf2',
+        'pretty_version' => '0.0.2',
+        'version' => '0.0.2.0',
+        'reference' => null,
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        'echovel/kitephp' => array(
+        'echovel/framework' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '49052f5fec281b6c28e708a71308f83ee93d4bf2',
+            'reference' => 'c8ffb6637a47696c2c8c4bdd655939ba65855ec8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../echovel/framework',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'echovel/kitephp' => array(
+            'pretty_version' => '0.0.2',
+            'version' => '0.0.2.0',
+            'reference' => null,
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

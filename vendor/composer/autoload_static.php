@@ -7,7 +7,7 @@ namespace Composer\Autoload;
 class ComposerStaticInitaa477a7b5e725b78d6ec7acc772569b3
 {
     public static $files = array (
-        'f59f76cbddf6ab204a52c58ce4eb3404' => __DIR__ . '/..' . '/echovel/kitephp/src/helpers.php',
+        'f5e0673e9200a8509eb63f88658b4aec' => __DIR__ . '/..' . '/echovel/framework/src/helpers.php',
         'f424bfa1265d0c7f7801ad30b9a1d01e' => __DIR__ . '/../..' . '/helper/functions.php',
     );
 
@@ -32,7 +32,7 @@ class ComposerStaticInitaa477a7b5e725b78d6ec7acc772569b3
     public static $prefixDirsPsr4 = array (
         'Kite\\Core\\' =>
         array (
-            0 => __DIR__ . '/..' . '/echovel/kitephp/src',
+            0 => __DIR__ . '/..' . '/echovel/framework/src',
         ),
         'Database\\' =>
         array (

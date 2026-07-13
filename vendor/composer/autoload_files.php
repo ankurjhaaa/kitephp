@@ -6,6 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'f59f76cbddf6ab204a52c58ce4eb3404' => $vendorDir . '/echovel/kitephp/src/helpers.php',
+    'f5e0673e9200a8509eb63f88658b4aec' => $vendorDir . '/echovel/framework/src/helpers.php',
     'f424bfa1265d0c7f7801ad30b9a1d01e' => $baseDir . '/helper/functions.php',
 );

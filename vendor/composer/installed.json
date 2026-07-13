@@ -1,5 +1,37 @@
 {
-    "packages": [],
+    "packages": [
+        {
+            "name": "echovel/framework",
+            "version": "dev-main",
+            "version_normalized": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../framework",
+                "reference": "c8ffb6637a47696c2c8c4bdd655939ba65855ec8"
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Kite\\Core\\": "src/"
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "The KitePHP Framework Core",
+            "transport-options": {
+                "relative": true
+            },
+            "install-path": "../echovel/framework"
+        }
+    ],
     "dev": true,
     "dev-package-names": []
 }
