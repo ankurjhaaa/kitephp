@@ -130,13 +130,20 @@ All views MUST be in `resource/view/` and end with `.kite.php`.
 - Validation Errors: `@error('field') {{ $message }} @enderror`
 - Old Form Input: `{{ old('field', $default) }}`
 
-## 6. SPA Engine & Form Submission (KiteJS)
-KitePHP acts as a Single Page Application without any build tools.
+## 6. SPA & Reactive Engine (KiteJS)
+KitePHP acts as a Single Page Application without any build tools, and includes a built-in Alpine-like Reactive Engine.
+
+**SPA Navigation:**
 - **Navigation without reload:** `<a href="/about" kite:navigate>About</a>`
 - **AJAX Form Submission:** `<form action="/login" method="POST" kite:submit>`
   - When `kite:submit` is present, the form submits via AJAX.
   - If the controller returns a `redirect()`, KiteJS will automatically fetch the new page via AJAX and update the DOM!
-- The `kite:navigate` and `kite:submit` attributes are REQUIRED for SPA behavior.
+
+**Reactive State & Auto-Binding:**
+- **Define State & PHP Defaults:** Use `kite:data="{ count: 0, search: '' }"` on a container. PHP will automatically parse this and inject these as default variables into the view!
+- **Auto-Update Text:** Simply write `{{ $count }}`. PHP automatically wraps this in `<kite-var>`, and `kite.js` updates it instantly when the state changes. NO `kite:text` needed!
+- **Auto-Bind Inputs:** Simply use the `name` attribute matching the state key: `<input type="text" name="search">`. KiteJS will automatically establish two-way binding. NO `kite:model` needed!
+- **Client-Side Functions:** Use `kite:click="count++"` or `kite:function="doSomething()"` to execute Javascript logic directly in the reactive state context.
 
 ## 7. Global Helpers
 - `view('view.name', ['key' => 'value'])`

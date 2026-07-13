@@ -164,10 +164,11 @@ db('users')->where('id', 1)->delete();
 
 ---
 
-## ⚡ SPA Engine (KiteJS)
+## ⚡ SPA & Reactive Engine (KiteJS)
 
-KiteJS intercepts clicks and form submissions, fetching content via AJAX for a lightning-fast experience.
+KiteJS is a zero-config engine that provides lightning-fast SPA navigation and Alpine-like client-side reactivity without the extra bloat.
 
+### Instant Navigation & Forms
 ```html
 <!-- Instant Navigation -->
 <a href="/about" kite:navigate>About Us</a>
@@ -178,6 +179,25 @@ KiteJS intercepts clicks and form submissions, fetching content via AJAX for a l
     <input type="email" name="email">
     <button type="submit">Login</button>
 </form>
+```
+
+### Zero-Config Reactivity
+Define state, bind inputs automatically by `name`, and update text automatically via `{{ $var }}`.
+
+```html
+<!-- 1. Define State (PHP auto-extracts these as defaults!) -->
+<div kite:data="{ count: 0, name: '' }">
+    
+    <!-- 2. Auto-Bind Inputs (Matches name="name" with state.name automatically) -->
+    <input type="text" name="name" placeholder="Type your name...">
+    
+    <!-- 3. Auto-Updating Text (PHP auto-wraps this for KiteJS!) -->
+    <h1>Hello, {{ $name }}</h1>
+    <p>Button clicked {{ $count }} times.</p>
+
+    <!-- 4. Client-side actions -->
+    <button kite:click="count++">Increment</button>
+</div>
 ```
 
 ---

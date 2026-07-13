@@ -102,7 +102,37 @@ class View
         if (!file_exists($compiledPath) || filemtime($path) > filemtime($compiledPath)) {
             $content = file_get_contents($path);
             
-            // Compile {{ $var }} to htmlspecialchars output to prevent XSS attacks
+            // Compile kite:data defaults to inject PHP variables
+            $content = preg_replace_callback('/kite:data=["\']({.*?})["\']/', function($matches) {
+                $code = '<?php ';
+                $dataStr = trim($matches[1], '{}');
+                $pairs = explode(',', $dataStr);
+                foreach($pairs as $pair) {
+                    $parts = explode(':', $pair, 2);
+                    if(count($parts) == 2) {
+                        $k = trim($parts[0], " '\"\n\r\t");
+                        $v = trim($parts[1], " '\"\n\r\t");
+                        if (strtolower($v) === 'true') $v = 'true';
+                        elseif (strtolower($v) === 'false') $v = 'false';
+                        elseif (!is_numeric($v)) $v = "'$v'";
+                        $code .= "if (!isset(\$$k)) \$$k = $v; ";
+                    }
+                }
+                $code .= '?>';
+                return $code . $matches[0];
+            }, $content);
+
+            // Compile Reactive {{ $var }} to <kite-var> wrapper
+            $content = preg_replace_callback('/(=\s*["\'][^"\'\>]*?)?{{\s*\$([a-zA-Z0-9_]+)\s*}}/', function($matches) {
+                if (!empty($matches[1])) {
+                    // It's inside an attribute, don't wrap
+                    return $matches[1] . '<?php echo e($' . $matches[2] . '); ?>';
+                }
+                // Wrap it for client-side reactivity
+                return '<kite-var data-key="' . $matches[2] . '"><?php echo e($' . $matches[2] . '); ?></kite-var>';
+            }, $content);
+            
+            // Compile Normal {{ $expr }} to htmlspecialchars output to prevent XSS attacks
             $content = preg_replace('/{{\s*(.+?)\s*}}/', '<?php echo e($1); ?>', $content);
             
             // Compile {!! $var !!} to raw, unescaped output (Use with caution!)

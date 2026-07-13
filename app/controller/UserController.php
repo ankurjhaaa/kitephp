@@ -23,64 +23,32 @@ class UserController
     }
 
     /**
-     * Show the users list and edit form.
+     * Save a user (Insert or Update).
      */
-    public function edit(Request $request, $id)
+    public function save(Request $request)
     {
-        $search = $request->input('search');
-        $query = db('users');
+        $id = $request->input('editId');
         
-        if ($search) {
-            $query->where('name', 'LIKE', '%' . $search . '%');
-        }
-        
-        $users = $query->orderBy('id', 'DESC')->paginate(5);
-        $editUser = db('users')->where('id', $id)->first();
-        
-        if (!$editUser) {
-            session()->flash('error', 'User not found!');
-            return redirect(route('users.index'));
-        }
-
-        return view('users', ['users' => $users, 'editUser' => $editUser, 'search' => $search]);
-    }
-
-    /**
-     * Store a new user.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|min:3|max:50',
-            'email' => 'required|email|unique:users,email'
-        ]);
+            'email' => $id ? "required|email|unique:users,email,{$id}" : 'required|email|unique:users,email'
+        ];
         
-        db('users')->insert([
-            'name' => $validated['name'],
-            'email' => $validated['email']
-        ]);
+        $validated = $request->validate($rules);
         
-        session()->flash('success', 'User added successfully!');
-
-        return redirect(route('users.index'));
-    }
-
-    /**
-     * Update an existing user.
-     */
-    public function update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'name' => 'required|min:3|max:50',
-            'email' => "required|email|unique:users,email,{$id}"
-        ]);
-        
-        db('users')->where('id', $id)->update([
-            'name' => $validated['name'],
-            'email' => $validated['email']
-        ]);
-        
-        session()->flash('success', 'User updated successfully!');
+        if ($id) {
+            db('users')->where('id', $id)->update([
+                'name' => $validated['name'],
+                'email' => $validated['email']
+            ]);
+            session()->flash('success', 'User updated successfully!');
+        } else {
+            db('users')->insert([
+                'name' => $validated['name'],
+                'email' => $validated['email']
+            ]);
+            session()->flash('success', 'User added successfully!');
+        }
 
         return redirect(route('users.index'));
     }

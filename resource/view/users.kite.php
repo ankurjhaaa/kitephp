@@ -29,7 +29,8 @@
 </head>
 
 <body
-    class="bg-[#0f111a] text-gray-300 font-sans p-6 md:p-12 min-h-screen selection:bg-blue-500/30 selection:text-blue-200">
+    class="bg-[#0f111a] text-gray-300 font-sans p-6 md:p-12 min-h-screen selection:bg-blue-500/30 selection:text-blue-200"
+    kite:data="{ isEdit: false, editId: '', name: '', email: '' }">
     <div class="max-w-5xl mx-auto">
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -108,7 +109,7 @@
                         @endif
                     </form>
 
-                    <button onclick="document.getElementById('userModal').classList.remove('hidden')"
+                    <button type="button" kite:click="isEdit = false; editId = ''; name = ''; email = ''; document.getElementById('userModal').classList.remove('hidden')"
                         class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded shadow-lg shadow-blue-900/20 transition-colors flex justify-center items-center gap-2 whitespace-nowrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
@@ -139,8 +140,8 @@
                             </td>
                             <td class="py-4 px-5 text-right">
                                 <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('users.edit', ['id' => $user->id]) }}" kite:navigate
-                                        class="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">Edit</a>
+                                    <button type="button" kite:click="isEdit = true; editId = '{{ $user->id }}'; name = '{{ $user->name }}'; email = '{{ $user->email }}'; document.getElementById('userModal').classList.remove('hidden')"
+                                        class="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">Edit</button>
 
                                     <form action="{{ route('users.delete', ['id' => $user->id]) }}" method="POST"
                                         kite:submit class="inline m-0">
@@ -177,92 +178,88 @@
 
     <!-- Modal for Form -->
     <div id="userModal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 @if(!$editUser && empty(errors())) hidden @endif">
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 @if(empty(errors())) hidden @endif">
         <div
             class="bg-[#161b22] w-full max-w-md rounded-xl border border-gray-800 shadow-2xl relative transition-all @if(errors()) ring-1 ring-red-500/50 @endif">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                        @if($editUser)
-                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                            </path>
-                        </svg>
-                        Edit User
-                        @else
-                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                            </path>
-                        </svg>
-                        Add New User
-                        @endif
+                        
+                        <span kite:show="isEdit" class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                </path>
+                            </svg>
+                            Edit User
+                        </span>
+                        
+                        <span kite:show="!isEdit" class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                                </path>
+                            </svg>
+                            Add New User
+                        </span>
                     </h2>
 
-                    @if($editUser)
-                    <a href="{{ route('users.index') }}" kite:navigate
-                        class="text-gray-400 hover:text-white transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </a>
-                    @else
-                    <button onclick="document.getElementById('userModal').classList.add('hidden')"
+                    <button type="button" onclick="document.getElementById('userModal').classList.add('hidden')"
                         class="text-gray-400 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    @endif
                 </div>
 
-                @if($editUser)
-                <form action="{{ route('users.update', ['id' => $editUser->id]) }}" method="POST" kite:submit>
-                    @else
-                    <form action="{{ route('users.store') }}" method="POST" kite:submit>
-                        @endif
-                        @csrf
-                        <div class="mb-4">
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Full
-                                Name</label>
-                            <input type="text" name="name" placeholder="John Doe"
-                                value="{{ old('name', $editUser ? $editUser->name : '') }}"
-                                class="w-full bg-[#0d1117] border @if(errors('name')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
-                                required>
-                            @error('name')
-                            <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
-                            @enderror
+                <form action="{{ route('users.save') }}" method="POST" kite:submit>
+                    @csrf
+                    <input type="hidden" name="editId">
+                    
+                    <!-- Reactive Engine Live Preview -->
+                    <div class="mb-5 px-4 py-3 bg-blue-900/20 border border-blue-900/50 rounded-lg flex items-center gap-3">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-sm">
+                            <span class="text-blue-300 font-medium">Live Preview:</span>
+                            <span class="text-white font-bold ml-1">{{ $name }}</span>
                         </div>
+                    </div>
 
-                        <div class="mb-6">
-                            <label
-                                class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Email
-                                Address</label>
-                            <input type="email" name="email" placeholder="john@example.com"
-                                value="{{ old('email', $editUser ? $editUser->email : '') }}"
-                                class="w-full bg-[#0d1117] border @if(errors('email')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
-                                required>
-                            @error('email')
-                            <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Full
+                            Name</label>
+                        <input type="text" name="name" placeholder="John Doe"
+                            class="w-full bg-[#0d1117] border @if(errors('name')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                            required>
+                        @error('name')
+                        <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                        <div class="flex gap-3">
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors w-full shadow-lg shadow-blue-900/20">
-                                @if($editUser) Update User @else Save User @endif
-                            </button>
-                            @if($editUser)
-                            <a href="{{ route('users.index') }}" kite:navigate
-                                class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 px-4 rounded-lg text-center transition-colors border border-gray-700 w-full">Cancel</a>
-                            @else
-                            <button type="button" onclick="document.getElementById('userModal').classList.add('hidden')"
-                                class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 px-4 rounded-lg text-center transition-colors border border-gray-700 w-full">Cancel</button>
-                            @endif
-                        </div>
-                    </form>
+                    <div class="mb-6">
+                        <label
+                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Email
+                            Address</label>
+                        <input type="email" name="email" placeholder="john@example.com"
+                            class="w-full bg-[#0d1117] border @if(errors('email')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                            required>
+                        @error('email')
+                        <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors w-full shadow-lg shadow-blue-900/20">
+                            <span kite:show="isEdit">Update User</span>
+                            <span kite:show="!isEdit">Save User</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('userModal').classList.add('hidden')"
+                            class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 px-4 rounded-lg text-center transition-colors border border-gray-700 w-full">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
