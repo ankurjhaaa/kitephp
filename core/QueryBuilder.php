@@ -16,9 +16,10 @@ class QueryBuilder
     // The active database connection
     protected PDO $pdo;
     
-    // The target table name
+    // The target table name and optional model class for hydration
     protected string $table;
-    
+    protected ?string $modelClass = null;
+
     // Query building blocks
     protected array $select = ['*'];
     protected array $joins = [];
@@ -30,10 +31,11 @@ class QueryBuilder
     /**
      * Initialize the builder with a PDO instance and a target table.
      */
-    public function __construct(PDO $pdo, string $table)
+    public function __construct(PDO $pdo, string $table, ?string $modelClass = null)
     {
         $this->pdo = $pdo;
         $this->table = $table;
+        $this->modelClass = $modelClass;
     }
 
     /**
@@ -144,8 +146,13 @@ class QueryBuilder
     public function get(): array
     {
         $stmt = $this->pdo->prepare($this->buildSelectQuery());
+        
+        if ($this->modelClass) {
+            $stmt->setFetchMode(PDO::FETCH_CLASS, $this->modelClass);
+        }
+        
         $stmt->execute($this->bindings);
-        return $stmt->fetchAll(); // Returns an array of objects
+        return $stmt->fetchAll();
     }
 
     /**
@@ -195,6 +202,11 @@ class QueryBuilder
     {
         $this->limit(1);
         $stmt = $this->pdo->prepare($this->buildSelectQuery());
+        
+        if ($this->modelClass) {
+            $stmt->setFetchMode(PDO::FETCH_CLASS, $this->modelClass);
+        }
+        
         $stmt->execute($this->bindings);
         return $stmt->fetch() ?: null;
     }

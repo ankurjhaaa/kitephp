@@ -44,7 +44,7 @@
                 </h1>
                 <p class="text-gray-400 mt-1 text-sm">A fast, single-page CRUD built with KiteJS</p>
             </div>
-            <a href="{{ route('home') }}" kite:navigate="home"
+            <a href="{{ route('home') }}" kite:navigate
                 class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors text-sm font-medium border border-gray-700 flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -89,7 +89,7 @@
                 </h2>
 
                 <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                    <form action="{{ route('users.index') }}" method="GET" kite:submit="search"
+                    <form action="{{ route('users.index') }}" method="GET" kite:submit
                         class="flex gap-2 w-full sm:w-auto">
                         <input type="text" name="search" placeholder="Search by name..." value="{{ $search ?? '' }}"
                             class="w-full sm:w-64 bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
@@ -97,7 +97,7 @@
                         <button type="submit"
                             class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors border border-gray-600">Search</button>
                         @if(!empty($search))
-                        <a href="{{ route('users.index') }}" kite:navigate="clearSearch"
+                        <a href="{{ route('users.index') }}" kite:navigate
                             class="px-3 py-2 bg-red-900/50 hover:bg-red-800/50 text-red-400 rounded-lg text-sm font-medium transition-colors border border-red-800/50 flex items-center"
                             title="Clear Search">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@
                             </td>
                             <td class="py-4 px-5 text-right">
                                 <div class="flex items-center justify-end gap-3">
-                                    <a href="{{ route('users.edit', ['id' => $user->id]) }}" kite:navigate="edit"
+                                    <a href="{{ route('users.edit', ['id' => $user->id]) }}" kite:navigate
                                         class="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">Edit</a>
 
                                     <form action="{{ route('users.delete', ['id' => $user->id]) }}" method="POST"
@@ -200,7 +200,7 @@
                     </h2>
 
                     @if($editUser)
-                    <a href="{{ route('users.index') }}" kite:navigate="close"
+                    <a href="{{ route('users.index') }}" kite:navigate
                         class="text-gray-400 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -219,9 +219,9 @@
                 </div>
 
                 @if($editUser)
-                <form action="{{ route('users.update', ['id' => $editUser->id]) }}" method="POST" kite:submit="update">
+                <form action="{{ route('users.update', ['id' => $editUser->id]) }}" method="POST" kite:submit>
                     @else
-                    <form action="{{ route('users.store') }}" method="POST" kite:submit="store">
+                    <form action="{{ route('users.store') }}" method="POST" kite:submit>
                         @endif
                         @csrf
                         <div class="mb-4">
@@ -255,7 +255,7 @@
                                 @if($editUser) Update User @else Save User @endif
                             </button>
                             @if($editUser)
-                            <a href="{{ route('users.index') }}" kite:navigate="users"
+                            <a href="{{ route('users.index') }}" kite:navigate
                                 class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 px-4 rounded-lg text-center transition-colors border border-gray-700 w-full">Cancel</a>
                             @else
                             <button type="button" onclick="document.getElementById('userModal').classList.add('hidden')"

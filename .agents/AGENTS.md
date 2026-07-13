@@ -79,11 +79,18 @@ $user = db('users')->where('id', 1)->first(); // Returns a single object
 // Advanced Filtering (>, <, !=)
 $expensiveItems = db('products')->where('price', '>', 1000)->get();
 
-// Joins (Relationships)
+// Joins (Raw SQL)
 $posts = db('posts')
     ->select('posts.*', 'users.name as author_name')
     ->join('users', 'posts.user_id = users.id')
     ->get();
+
+// ORM Relationships (Eloquent Style)
+// In Model:
+// public function posts() { return $this->hasMany(Post::class, 'user_id'); }
+// public function user() { return $this->belongsTo(User::class, 'user_id'); }
+$user = User::objects()->first();
+$userPosts = $user->posts; // Magic property triggers method automatically
 
 // Chaining
 $query = db('users')
@@ -125,8 +132,8 @@ All views MUST be in `resource/view/` and end with `.kite.php`.
 
 ## 6. SPA Engine & Form Submission (KiteJS)
 KitePHP acts as a Single Page Application without any build tools.
-- **Navigation without reload:** `<a href="/about" kite:navigate="about">About</a>`
-- **AJAX Form Submission:** `<form action="/login" method="POST" kite:submit="login">`
+- **Navigation without reload:** `<a href="/about" kite:navigate>About</a>`
+- **AJAX Form Submission:** `<form action="/login" method="POST" kite:submit>`
   - When `kite:submit` is present, the form submits via AJAX.
   - If the controller returns a `redirect()`, KiteJS will automatically fetch the new page via AJAX and update the DOM!
 - The `kite:navigate` and `kite:submit` attributes are REQUIRED for SPA behavior.

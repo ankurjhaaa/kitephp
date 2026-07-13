@@ -147,11 +147,10 @@ $user = db('users')->find(1);
 $paginatedUsers = db('users')->orderBy('id', 'DESC')->paginate(10);
 // Render links in view: {!! $paginatedUsers->links() !!}
 
-// Joins (Relationships)
-$posts = db('posts')
-    ->select('posts.*', 'users.name as author_name')
-    ->join('users', 'posts.user_id = users.id')
-    ->get();
+// ORM Relationships (Eloquent Style)
+// Define relations in models using $this->hasMany(), $this->belongsTo(), $this->hasOne()
+$user = User::objects()->find(1);
+$posts = $user->posts; // Magic property automatically calls $user->posts()!
 
 // Insert
 db('users')->insert(['name' => 'John']);
@@ -171,10 +170,10 @@ KiteJS intercepts clicks and form submissions, fetching content via AJAX for a l
 
 ```html
 <!-- Instant Navigation -->
-<a href="/about" kite:navigate="about">About Us</a>
+<a href="/about" kite:navigate>About Us</a>
 
 <!-- AJAX Form Submission -->
-<form action="/login" method="POST" kite:submit="login">
+<form action="/login" method="POST" kite:submit>
     @csrf
     <input type="email" name="email">
     <button type="submit">Login</button>

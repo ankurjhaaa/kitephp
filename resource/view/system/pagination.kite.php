@@ -11,11 +11,11 @@
         @if($paginator->onFirstPage())
             <span class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-800 bg-[#0d1117] cursor-not-allowed">Previous</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" kite:navigate="prevPage" class="relative inline-flex items-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-gray-700 hover:bg-gray-700 transition-colors">Previous</a>
+            <a href="{{ $paginator->previousPageUrl() }}" kite:navigate class="relative inline-flex items-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-gray-700 hover:bg-gray-700 transition-colors">Previous</a>
         @endif
 
         @if($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" kite:navigate="nextPage" class="relative inline-flex items-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-gray-700 hover:bg-gray-700 transition-colors">Next</a>
+            <a href="{{ $paginator->nextPageUrl() }}" kite:navigate class="relative inline-flex items-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-gray-700 hover:bg-gray-700 transition-colors">Next</a>
         @else
             <span class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-800 bg-[#0d1117] cursor-not-allowed">Next</span>
         @endif

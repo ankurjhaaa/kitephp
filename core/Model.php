@@ -12,6 +12,19 @@ use Kite\Core\Schema\Field;
 abstract class Model
 {
     /**
+     * Magic getter for lazy-loading relationships.
+     * When accessing a non-existent property like `$user->posts`, this method checks
+     * if a `posts()` method exists, executes it, and returns the related models.
+     */
+    public function __get(string $key)
+    {
+        if (method_exists($this, $key)) {
+            return $this->$key();
+        }
+        return null;
+    }
+
+    /**
      * Get the database table name associated with the model.
      * Automatically attempts to pluralize the class name (e.g., User -> users, Post -> posts).
      * Override this method in your subclass if you want a custom table name.
@@ -20,12 +33,12 @@ abstract class Model
     {
         $path = explode('\\', static::class);
         $name = strtolower(array_pop($path)); // Get the class name without the namespace
-        
+
         // Simple pluralization (append 's' unless it already ends in 's')
         if (substr($name, -1) !== 's') {
             $name .= 's';
         }
-        
+
         return $name;
     }
 
@@ -58,7 +71,7 @@ abstract class Model
 
         return $fields;
     }
-    
+
     /**
      * Define the schema fields for this model.
      * Must be implemented by the subclass returning an array of Field objects.
@@ -73,6 +86,30 @@ abstract class Model
      */
     public static function objects(): QueryBuilder
     {
-        return Database::table(static::tableName());
+        return new QueryBuilder(Database::connect(), static::tableName(), static::class);
+    }
+
+    /**
+     * Defines a one-to-one relationship.
+     */
+    protected function hasOne(string $relatedClass, string $foreignKey)
+    {
+        return $relatedClass::objects()->where($foreignKey, $this->id)->first();
+    }
+
+    /**
+     * Defines a one-to-many relationship.
+     */
+    protected function hasMany(string $relatedClass, string $foreignKey)
+    {
+        return $relatedClass::objects()->where($foreignKey, $this->id)->get();
+    }
+
+    /**
+     * Defines an inverse one-to-one or many-to-one relationship.
+     */
+    protected function belongsTo(string $relatedClass, string $foreignKey)
+    {
+        return $relatedClass::objects()->where('id', $this->$foreignKey)->first();
     }
 }
