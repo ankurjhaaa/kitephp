@@ -1,6 +1,6 @@
 {
-    "name": "echovel/kitephp",
-    "version": "0.0.3",
+    "name": "ankurjhaaa/kitephp",
+    "version": "0.0.4",
     "type": "project",
     "description": "The Full Stack PHP Micro-Framework with a built-in SPA Reactive Engine.",
     "keywords": ["framework", "php", "spa", "micro-framework", "reactive"],
@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": "^8.0",
-        "echovel/framework": "^0.0.2"
+        "echovel/framework": "^0.0.4"
     },
     "autoload": {
         "psr-4": {
