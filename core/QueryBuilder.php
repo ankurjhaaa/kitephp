@@ -21,6 +21,7 @@ class QueryBuilder
     
     // Query building blocks
     protected array $select = ['*'];
+    protected array $joins = [];
     protected array $wheres = [];
     protected array $bindings = []; // Holds values for prepared statement placeholders (?)
     protected string $orderBy = '';
@@ -43,6 +44,31 @@ class QueryBuilder
     {
         $this->select = is_array($columns[0]) ? $columns[0] : $columns;
         return $this;
+    }
+
+    /**
+     * Add an INNER JOIN clause to the query.
+     */
+    public function join(string $table, string $condition, string $type = 'INNER'): self
+    {
+        $this->joins[] = "{$type} JOIN {$table} ON {$condition}";
+        return $this;
+    }
+
+    /**
+     * Add a LEFT JOIN clause to the query.
+     */
+    public function leftJoin(string $table, string $condition): self
+    {
+        return $this->join($table, $condition, 'LEFT');
+    }
+
+    /**
+     * Add a RIGHT JOIN clause to the query.
+     */
+    public function rightJoin(string $table, string $condition): self
+    {
+        return $this->join($table, $condition, 'RIGHT');
     }
 
     /**
@@ -91,6 +117,11 @@ class QueryBuilder
         // Start building the query
         $query = "SELECT " . implode(', ', $this->select) . " FROM {$this->table}";
 
+        // Add JOIN clauses if any exist
+        if (!empty($this->joins)) {
+            $query .= " " . implode(' ', $this->joins);
+        }
+
         // Add WHERE clauses if any exist
         if (!empty($this->wheres)) {
             $conditions = [];
@@ -125,6 +156,11 @@ class QueryBuilder
     {
         // 1. Get total count
         $countQuery = "SELECT COUNT(*) FROM {$this->table}";
+        
+        if (!empty($this->joins)) {
+            $countQuery .= " " . implode(' ', $this->joins);
+        }
+
         if (!empty($this->wheres)) {
             $conditions = [];
             foreach ($this->wheres as $where) {

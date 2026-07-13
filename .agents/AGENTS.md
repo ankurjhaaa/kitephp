@@ -22,30 +22,28 @@ post('/login', 'AuthController@login')->name('login.post');
 get('/user/{id}', function($id) { ... });
 ```
 
-## 2. Request Handling & Controllers
+## 2. Request Handling, Validation & Controllers
 Controllers must be in the `App\Controller` namespace. The `Kite\Core\Request` object captures GET/POST/JSON inputs and is automatically injected.
+
+**Form Validation:**
+KitePHP provides Laravel-style validation. Use `$request->validate()`. If validation fails, it automatically redirects back with flashed errors and old input.
 ```php
 namespace App\Controller;
 use Kite\Core\Request;
 
 class UserController {
     public function store(Request $request) {
-        // Fetch input from POST or GET
-        $email = $request->input('email');
-        
-        // Manual Validation
-        if (!$email) {
-            session()->flash('error', 'Email is required!');
-            return redirect(route('home')); // Or redirect back if you have a URL
-        }
+        // Validation (Automatically redirects on failure)
+        $validated = $request->validate([
+            'name' => 'required|min:3|max:50',
+            'email' => 'required|email|unique:users,email'
+        ]);
 
         // Insert into DB
-        db('users')->insert(['email' => $email]);
-
-        // Check if AJAX request (KiteJS handles this transparently usually)
-        if ($request->isAjax()) {
-            return ['success' => true, 'message' => 'User added!'];
-        }
+        db('users')->insert([
+            'name' => $validated['name'],
+            'email' => $validated['email']
+        ]);
 
         session()->flash('success', 'User added!');
         return redirect(route('home'));
@@ -56,12 +54,11 @@ class UserController {
 ## 3. Database & Models (`database/models.php`)
 KitePHP uses a Django-style auto-migration system. Do NOT create Laravel-style migration files. Define the schema directly in the model class inside `database/models.php`.
 ```php
-class Product extends Model {
+class Post extends Model {
     public static function schema(): array {
         return [
-            'id'    => Field::id(),
-            'name'  => Field::string(),
-            'price' => Field::integer()->default('0'),
+            'user_id' => Field::foreignId('users', 'id', ['onDelete' => 'CASCADE']),
+            'title'   => Field::string(),
         ];
     }
 }
@@ -82,12 +79,22 @@ $user = db('users')->where('id', 1)->first(); // Returns a single object
 // Advanced Filtering (>, <, !=)
 $expensiveItems = db('products')->where('price', '>', 1000)->get();
 
+// Joins (Relationships)
+$posts = db('posts')
+    ->select('posts.*', 'users.name as author_name')
+    ->join('users', 'posts.user_id = users.id')
+    ->get();
+
 // Chaining
 $query = db('users')
     ->where('role', 'admin')
     ->orderBy('created_at', 'DESC')
     ->limit(10)
     ->get();
+
+// Pagination
+$users = db('users')->orderBy('id', 'DESC')->paginate(10);
+// In the view, render links: {!! $users->links() !!}
 ```
 
 **Insert, Update, Delete:**
@@ -113,6 +120,8 @@ All views MUST be in `resource/view/` and end with `.kite.php`.
 - Logic: `@if(condition) ... @elseif(...) ... @else ... @endif`
 - Loops: `@foreach($items as $item) ... @endforeach`
 - CSRF Token: `@csrf` (Use inside all POST forms).
+- Validation Errors: `@error('field') {{ $message }} @enderror`
+- Old Form Input: `{{ old('field', $default) }}`
 
 ## 6. SPA Engine & Form Submission (KiteJS)
 KitePHP acts as a Single Page Application without any build tools.

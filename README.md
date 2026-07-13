@@ -7,8 +7,8 @@ KitePHP gives you the developer experience of Laravel and the blazing speed of a
 - **Zero-Config SPA Engine (KiteJS):** Fetch HTML via AJAX and update the DOM and browser history seamlessly.
 - **Django-Style Models:** Define schemas directly inside models. No separate migration files required.
 - **Auto Migrations:** Just run `php kite migrate` and the database structure automatically syncs with your models.
-- **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade.
-- **Secure Query Builder:** PDO prepared statements out of the box to prevent SQL injection.
+- **Kite Templating Engine:** A fast, secure engine similar to Laravel Blade, with `@error` and `old()` directives.
+- **Secure Query Builder:** PDO prepared statements and built-in Pagination (`->paginate()`).
 - **Built-in TailwindCSS:** Designed to look beautiful from the start with a customized dark mode UI.
 - **Minimalist & Lightweight:** No bloat, incredibly fast, and easy to understand.
 
@@ -61,7 +61,15 @@ use Kite\Core\Request;
 
 class UserController {
     public function store(Request $request) {
-        $name = $request->input('name', 'Default');
+        $validated = $request->validate([
+            'name' => 'required|min:3|max:50',
+            'email' => 'required|email|unique:users,email'
+        ]);
+        
+        db('users')->insert([
+            'name' => $validated['name'],
+            'email' => $validated['email']
+        ]);
         
         session()->flash('success', 'Created successfully!');
         
@@ -91,6 +99,14 @@ KitePHP uses `.kite.php` extensions for templates, providing a clean syntax simi
         <li>{{ $item }}</li>
     @endforeach
     </ul>
+
+    <form method="POST">
+        @csrf
+        <input type="text" name="email" value="{{ old('email') }}">
+        @error('email')
+            <p>{{ $message }}</p>
+        @enderror
+    </form>
 @endsection
 ```
 
@@ -104,7 +120,6 @@ Define schemas directly in `database/models.php`.
 class Product extends Model {
     public static function schema(): array {
         return [
-            'id'    => Field::id(),
             'name'  => Field::string()->nullable(),
             'slug'  => Field::string()->unique(),
             'price' => Field::integer()->default('0'),
@@ -127,6 +142,16 @@ Interact with your database securely.
 ```php
 $users = db('users')->where('status', 'active')->get();
 $user = db('users')->find(1);
+
+// Pagination
+$paginatedUsers = db('users')->orderBy('id', 'DESC')->paginate(10);
+// Render links in view: {!! $paginatedUsers->links() !!}
+
+// Joins (Relationships)
+$posts = db('posts')
+    ->select('posts.*', 'users.name as author_name')
+    ->join('users', 'posts.user_id = users.id')
+    ->get();
 
 // Insert
 db('users')->insert(['name' => 'John']);

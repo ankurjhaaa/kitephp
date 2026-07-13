@@ -18,6 +18,13 @@ class Field
         return new self('integer', $options);
     }
 
+    public static function foreignId(string $table, string $column = 'id', array $options = []): self
+    {
+        $options['foreign_table'] = $table;
+        $options['foreign_column'] = $column;
+        return new self('foreign', $options);
+    }
+
     public static function string(array $options = []): self
     {
         return new self('string', $options);
@@ -37,7 +44,7 @@ class Field
     {
         $sql = '';
 
-        if ($this->type === 'integer') {
+        if ($this->type === 'integer' || $this->type === 'foreign') {
             $sql = 'INT';
         } elseif ($this->type === 'string') {
             $len = $this->options['max_length'] ?? 255;
@@ -71,6 +78,16 @@ class Field
             } else {
                 $sql .= " DEFAULT '{$default}'";
             }
+        }
+
+        if ($this->type === 'foreign') {
+            $table = $this->options['foreign_table'];
+            $column = $this->options['foreign_column'];
+            $onDelete = $this->options['onDelete'] ?? 'CASCADE';
+            
+            // Note: In SQLite or MySQL, FOREIGN KEY constraints are usually defined at the table level, 
+            // but inline references are supported. E.g.: INT REFERENCES table(col) ON DELETE CASCADE
+            $sql .= " REFERENCES {$table}({$column}) ON DELETE {$onDelete}";
         }
 
         return ltrim($sql);
