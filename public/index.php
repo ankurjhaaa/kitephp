@@ -1,7 +1,10 @@
 <?php
 
 /**
- * KitePHP - Lightweight PHP Development Kit
+ * KitePHP - The Full Stack PHP Micro-Framework
+ * 
+ * This is the entry point for all HTTP requests.
+ * It loads the Composer autoloader and boots the application.
  */
 
 define('KITE_START', microtime(true));
@@ -14,20 +17,8 @@ if (php_sapi_name() === 'cli-server') {
     }
 }
 
-// Load Autoloader
-require __DIR__ . '/../core/Autoloader.php';
-
-$autoloader = new \Kite\Core\Autoloader();
-$autoloader->addNamespace('Kite\Core\\', __DIR__ . '/../core');
-$autoloader->addNamespace('App\\Controller\\', __DIR__ . '/../app/controller');
-$autoloader->addNamespace('App\\Middleware\\', __DIR__ . '/../app/middleware');
-$autoloader->addNamespace('App\\Service\\', __DIR__ . '/../app/service');
-$autoloader->addNamespace('App\\', __DIR__ . '/../app');
-$autoloader->addNamespace('Database\\', __DIR__ . '/../database');
-$autoloader->register();
-
-// Load global helpers
-require __DIR__ . '/../helper/functions.php';
+// Load Composer Autoloader
+require __DIR__ . '/../vendor/autoload.php';
 
 // Initialize and run the application
 $app = new \Kite\Core\App(dirname(__DIR__));

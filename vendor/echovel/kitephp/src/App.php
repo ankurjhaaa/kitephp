@@ -15,6 +15,11 @@ class App
     protected string $basePath;
 
     /**
+     * Static reference to the base path, accessible by all core classes.
+     */
+    protected static string $rootPath = '';
+
+    /**
      * App constructor.
      * Sets the base path and calls the bootstrap method to prepare the environment.
      *
@@ -24,9 +29,27 @@ class App
     {
         // Remove trailing slashes to ensure consistent path resolution
         $this->basePath = rtrim($basePath, '/');
+        self::$rootPath = $this->basePath;
         
         // Initialize the framework components
         $this->bootstrap();
+    }
+
+    /**
+     * Get the application's root path.
+     * Used by View, Migrator, and other core classes to resolve user project paths.
+     */
+    public static function basePath(): string
+    {
+        return self::$rootPath;
+    }
+
+    /**
+     * Set the base path manually (used by CLI tools that don't fully boot the App).
+     */
+    public static function setBasePath(string $path): void
+    {
+        self::$rootPath = rtrim($path, '/');
     }
 
     /**

@@ -17,7 +17,7 @@ class Migrator
     public static function makeMigrations()
     {
         // 1. Ensure the models definition file exists
-        $modelsFile = dirname(__DIR__) . '/database/models.php';
+        $modelsFile = App::basePath() . '/database/models.php';
         if (!file_exists($modelsFile)) {
             echo "Error: database/models.php not found.\n";
             return;
@@ -47,7 +47,7 @@ class Migrator
         }
 
         // 4. Load the historical schema state to perform diffing
-        $schemaFile = dirname(__DIR__) . '/database/migrations/.schema.json';
+        $schemaFile = App::basePath() . '/database/migrations/.schema.json';
         $previousSchema = [];
         if (file_exists($schemaFile)) {
             $previousSchema = json_decode(file_get_contents($schemaFile), true) ?: [];
@@ -133,7 +133,7 @@ class Migrator
 
         // Generate the final filename timestamp
         $migrationName = date('Ymd_His') . $suffix . '.php';
-        $migrationDir = dirname(__DIR__) . '/database/migrations';
+        $migrationDir = App::basePath() . '/database/migrations';
         
         if (!is_dir($migrationDir)) {
             mkdir($migrationDir, 0755, true);
@@ -182,7 +182,7 @@ class Migrator
         $runMigrations = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         
         // 4. Find all migration files in the directory and sort them alphabetically (by timestamp)
-        $migrationFiles = glob(dirname(__DIR__) . '/database/migrations/*.php');
+        $migrationFiles = glob(App::basePath() . '/database/migrations/*.php');
         sort($migrationFiles);
         
         $migratedAny = false;

@@ -1,15 +1,40 @@
 {
-    "name": "ankurjha/kitephp",
+    "name": "echovel/kitephp",
+    "version": "0.0.2",
     "type": "project",
-    "description": "The Full Stack PHP Micro-Framework with SPA engine.",
-    "keywords": ["framework", "php", "spa", "micro-framework"],
+    "description": "The Full Stack PHP Micro-Framework with a built-in SPA Reactive Engine.",
+    "keywords": ["framework", "php", "spa", "micro-framework", "reactive"],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Ankur Jha",
+            "email": "ankur@echovel.com"
+        }
+    ],
     "require": {
         "php": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kite\\Core\\": "vendor/echovel/kitephp/src/",
+            "App\\": "app/",
+            "App\\Controller\\": "app/controller/",
+            "App\\Middleware\\": "app/middleware/",
+            "App\\Service\\": "app/service/",
+            "Database\\": "database/"
+        },
+        "files": [
+            "vendor/echovel/kitephp/src/helpers.php",
+            "helper/functions.php"
+        ]
     },
     "scripts": {
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
     }
 }

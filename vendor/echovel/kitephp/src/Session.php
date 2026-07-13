@@ -19,7 +19,7 @@ class Session
     {
         if (session_status() === PHP_SESSION_NONE) {
             // Store session files safely in the storage directory instead of the system temp folder
-            $savePath = dirname(__DIR__) . '/storage/session';
+            $savePath = App::basePath() . '/storage/session';
             if (is_dir($savePath)) {
                 session_save_path($savePath);
             }

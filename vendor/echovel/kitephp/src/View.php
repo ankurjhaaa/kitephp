@@ -61,7 +61,7 @@ class View
     protected static function resolvePath(string $view): string
     {
         // Convert dot notation to directory slashes (e.g., admin.home -> admin/home)
-        $base = dirname(__DIR__) . '/resource/view/' . str_replace('.', '/', $view);
+        $base = App::basePath() . '/resource/view/' . str_replace('.', '/', $view);
         
         $kitePath = $base . '.kite.php';
         $phpPath = $base . '.php';
@@ -88,7 +88,7 @@ class View
      */
     protected static function compile(string $path): string
     {
-        $cacheDir = dirname(__DIR__) . '/storage/cache/views';
+        $cacheDir = App::basePath() . '/storage/cache/views';
         
         // Ensure the cache directory exists
         if (!is_dir($cacheDir)) {

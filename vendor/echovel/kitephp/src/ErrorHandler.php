@@ -125,7 +125,7 @@ class ErrorHandler
             
             // Require the error template directly without using the View compiler 
             // to prevent loops if the error originated from the View compiler itself.
-            $viewPath = dirname(__DIR__) . '/resource/view/system/error.php';
+            $viewPath = App::basePath() . '/resource/view/system/error.php';
             if (file_exists($viewPath)) {
                 require $viewPath;
             } else {

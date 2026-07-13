@@ -9,21 +9,11 @@ if (php_sapi_name() !== 'cli') {
     die("Kite CLI must be run from the command line.");
 }
 
-require __DIR__ . '/core/Autoloader.php';
-
-$autoloader = new \Kite\Core\Autoloader();
-$autoloader->addNamespace('Kite\Core\\', __DIR__ . '/core');
-$autoloader->addNamespace('App\\Controller\\', __DIR__ . '/app/controller');
-$autoloader->addNamespace('App\\Middleware\\', __DIR__ . '/app/middleware');
-$autoloader->addNamespace('App\\Service\\', __DIR__ . '/app/service');
-$autoloader->addNamespace('App\\', __DIR__ . '/app');
-$autoloader->addNamespace('Database\\', __DIR__ . '/database');
-$autoloader->register();
-
-// Load global helpers
-require __DIR__ . '/helper/functions.php';
+// Load Composer Autoloader
+require __DIR__ . '/vendor/autoload.php';
 
 // Bootstrap minimal app
+\Kite\Core\App::setBasePath(__DIR__);
 \Kite\Core\Env::load(__DIR__ . '/.env');
 
 $command = $argv[1] ?? 'help';
@@ -94,6 +84,6 @@ switch ($command) {
         echo "  migrate          Run pending migrations\n";
         echo "  make:controller  Create a new controller\n";
         echo "  make:view        Create a new view\n";
-        echo "  help                     Show this help message\n";
+        echo "  help             Show this help message\n";
         break;
 }
