@@ -144,6 +144,33 @@ const Kite = {
                 this.submitForm(form);
             });
         });
+        
+        // --- kite:live (Debounced Live Form Submission) ---
+        const liveForms = Array.from(root.querySelectorAll('form')).filter(form => {
+            return Array.from(form.attributes).some(attr => attr.name.startsWith('kite:live'));
+        });
+
+        liveForms.forEach(form => {
+            let debounceTime = 300; // default
+            
+            // Extract debounce time from attribute (e.g. kite:live.debounce.500ms)
+            const liveAttr = Array.from(form.attributes).find(attr => attr.name.startsWith('kite:live'));
+            if (liveAttr) {
+                const parts = liveAttr.name.split('.');
+                const debounceIndex = parts.indexOf('debounce');
+                if (debounceIndex !== -1 && parts[debounceIndex + 1]) {
+                    debounceTime = parseInt(parts[debounceIndex + 1]) || 300;
+                }
+            }
+            
+            let timeout = null;
+            form.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    this.submitForm(form, true);
+                }, debounceTime);
+            });
+        });
 
         const links = root.querySelectorAll('a[kite\\:navigate]');
         links.forEach(link => {
@@ -185,8 +212,8 @@ const Kite = {
         this.hideLoading();
     },
 
-    async submitForm(form) {
-        this.showLoading(form);
+    async submitForm(form, isLive = false) {
+        if (!isLive) this.showLoading(form);
         let url = form.getAttribute('action') || window.location.href;
         const method = (form.getAttribute('method') || 'GET').toUpperCase();
 
@@ -215,15 +242,22 @@ const Kite = {
             }
 
             const html = await response.text();
-            this.replaceContent(html);
+            this.replaceContent(html, null, true, isLive);
         } catch (error) {
             console.error('KiteJS Form Submit Error:', error);
-            form.submit();
+            if (!isLive) form.submit();
         }
-        this.hideLoading(form);
+        if (!isLive) this.hideLoading(form);
     },
 
-    replaceContent(html, url = null, pushState = true) {
+    replaceContent(html, url = null, pushState = true, isLive = false) {
+        // Save focus state for Live Forms
+        const activeElement = document.activeElement;
+        const activeId = activeElement ? activeElement.id : null;
+        const activeName = activeElement ? activeElement.getAttribute('name') : null;
+        const selectionStart = activeElement ? activeElement.selectionStart : null;
+        const selectionEnd = activeElement ? activeElement.selectionEnd : null;
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
@@ -243,7 +277,28 @@ const Kite = {
             window.history.pushState({ url: url }, '', url);
         }
 
-        window.scrollTo(0, 0);
+        // Restore focus state for Live Forms
+        if (isLive) {
+            let newActiveElement = null;
+            if (activeId) {
+                newActiveElement = document.getElementById(activeId);
+            } else if (activeName) {
+                newActiveElement = document.querySelector(`[name="${activeName}"]`);
+            }
+
+            if (newActiveElement) {
+                newActiveElement.focus();
+                try {
+                    // Only text inputs support selection ranges
+                    if (selectionStart !== null && (newActiveElement.type === 'text' || newActiveElement.type === 'search' || newActiveElement.tagName === 'TEXTAREA')) {
+                        newActiveElement.setSelectionRange(selectionStart, selectionEnd);
+                    }
+                } catch (e) {}
+            }
+        } else {
+            // Only scroll to top on hard navigation
+            window.scrollTo(0, 0);
+        }
     },
 
     showLoading() {

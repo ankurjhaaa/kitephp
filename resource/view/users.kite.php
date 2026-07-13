@@ -90,7 +90,7 @@
                 </h2>
 
                 <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                    <form action="{{ route('users.index') }}" method="GET" kite:submit
+                    <form action="{{ route('users.index') }}" method="GET" kite:submit kite:live
                         class="flex gap-2 w-full sm:w-auto">
                         <input type="text" name="search" placeholder="Search by name..." value="{{ $search ?? '' }}"
                             class="w-full sm:w-64 bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
