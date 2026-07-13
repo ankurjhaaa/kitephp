@@ -121,7 +121,11 @@ const Kite = {
             document.title = doc.title;
         }
 
-        // Update Body
+        // Update Body Attributes (like CSS classes)
+        Array.from(document.body.attributes).forEach(attr => document.body.removeAttribute(attr.name));
+        Array.from(doc.body.attributes).forEach(attr => document.body.setAttribute(attr.name, attr.value));
+
+        // Update Body Content
         document.body.innerHTML = doc.body.innerHTML;
 
         // Re-bind events to new DOM

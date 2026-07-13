@@ -188,7 +188,30 @@ if (!function_exists('old')) {
      */
     function old(string $key, $default = '')
     {
-        return session()->getOldInput($key, $default);
+        static $oldInput = null;
+        if ($oldInput === null) {
+            $oldInput = session('_old_input', []);
+        }
+        return $oldInput[$key] ?? $default;
+    }
+}
+
+if (!function_exists('errors')) {
+    /**
+     * Retrieve validation errors. 
+     * If $field is provided, returns the first error for that field, or null.
+     * Caches the flash data statically so it can be called multiple times in a view.
+     */
+    function errors(?string $field = null)
+    {
+        static $errors = null;
+        if ($errors === null) {
+            $errors = session('errors', []);
+        }
+        if ($field) {
+            return $errors[$field][0] ?? null;
+        }
+        return $errors;
     }
 }
 

@@ -158,8 +158,8 @@
     </div>
 
     <!-- Modal for Form -->
-    <div id="userModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 @if(!$editUser) hidden @endif">
-        <div class="bg-[#161b22] w-full max-w-md rounded-xl border border-gray-800 shadow-2xl relative">
+    <div id="userModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 @if(!$editUser && empty(errors())) hidden @endif">
+        <div class="bg-[#161b22] w-full max-w-md rounded-xl border border-gray-800 shadow-2xl relative transition-all @if(errors()) ring-1 ring-red-500/50 @endif">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-5">
                     <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -196,17 +196,23 @@
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Full Name</label>
                         <input type="text" name="name" placeholder="John Doe"
-                            value="@if($editUser){{ $editUser->name }}@endif"
-                            class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                            value="{{ old('name', $editUser ? $editUser->name : '') }}"
+                            class="w-full bg-[#0d1117] border @if(errors('name')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                             required>
+                        @error('name')
+                            <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="mb-6">
                         <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Email Address</label>
                         <input type="email" name="email" placeholder="john@example.com"
-                            value="@if($editUser){{ $editUser->email }}@endif"
-                            class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                            value="{{ old('email', $editUser ? $editUser->email : '') }}"
+                            class="w-full bg-[#0d1117] border @if(errors('email')) border-red-500 @else border-gray-700 @endif rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                             required>
+                        @error('email')
+                            <p class="text-red-400 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex gap-3">

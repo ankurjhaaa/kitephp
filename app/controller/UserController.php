@@ -50,21 +50,17 @@ class UserController
      */
     public function store(Request $request)
     {
-        $name = trim($request->input('name'));
-        $email = trim($request->input('email'));
+        $validated = $request->validate([
+            'name' => 'required|min:3|max:50',
+            'email' => 'required|email|unique:users,email'
+        ]);
         
-        if ($name && $email) {
-            // Very simple duplicate check for demo
-            $exists = db('users')->where('email', $email)->first();
-            if ($exists) {
-                session()->flash('error', 'Email already exists!');
-            } else {
-                db('users')->insert(['name' => $name, 'email' => $email]);
-                session()->flash('success', 'User added successfully!');
-            }
-        } else {
-            session()->flash('error', 'Name and email are required.');
-        }
+        db('users')->insert([
+            'name' => $validated['name'],
+            'email' => $validated['email']
+        ]);
+        
+        session()->flash('success', 'User added successfully!');
 
         return redirect(route('users.index'));
     }
@@ -74,15 +70,17 @@ class UserController
      */
     public function update(Request $request, $id)
     {
-        $name = trim($request->input('name'));
-        $email = trim($request->input('email'));
+        $validated = $request->validate([
+            'name' => 'required|min:3|max:50',
+            'email' => "required|email|unique:users,email,{$id}"
+        ]);
         
-        if ($name && $email) {
-            db('users')->where('id', $id)->update(['name' => $name, 'email' => $email]);
-            session()->flash('success', 'User updated successfully!');
-        } else {
-            session()->flash('error', 'Name and email are required.');
-        }
+        db('users')->where('id', $id)->update([
+            'name' => $validated['name'],
+            'email' => $validated['email']
+        ]);
+        
+        session()->flash('success', 'User updated successfully!');
 
         return redirect(route('users.index'));
     }

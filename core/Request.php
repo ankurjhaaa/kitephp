@@ -2,6 +2,9 @@
 
 namespace Kite\Core;
 
+use Kite\Core\Validator;
+use Kite\Core\Session;
+
 /**
  * The Request class.
  * Captures and encapsulates incoming HTTP request data such as URI, Method, Query strings, 
@@ -80,5 +83,40 @@ class Request
     public function input(string $key, $default = null)
     {
         return $this->post[$key] ?? $this->query[$key] ?? $default;
+    }
+
+    /**
+     * Get all input data (merged GET and POST).
+     */
+    public function all(): array
+    {
+        return array_merge($this->query, $this->post);
+    }
+
+    /**
+     * Validate the current request data against the given rules.
+     * Automatically redirects back with errors if validation fails.
+     */
+    public function validate(array $rules): array
+    {
+        $validator = Validator::make($this->all(), $rules);
+
+        if ($validator->fails()) {
+            // Flash errors and old input
+            Session::instance()->flash('errors', $validator->errors());
+            Session::instance()->flash('_old_input', $this->all());
+            
+            // Redirect back
+            $referer = $_SERVER['HTTP_REFERER'] ?? '/';
+            header("Location: {$referer}");
+            exit;
+        }
+
+        // Return only the validated data
+        $validated = [];
+        foreach ($rules as $key => $rule) {
+            $validated[$key] = $this->input($key);
+        }
+        return $validated;
     }
 }

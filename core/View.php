@@ -124,6 +124,10 @@ class View
             $content = preg_replace('/@endsection/', '<?php \Kite\Core\View::endSection(); ?>', $content);
             $content = preg_replace('/@yield\s*\((.*?)\)/', '<?php \Kite\Core\View::yieldSection($1); ?>', $content);
             
+            // Compile Error Directives
+            $content = preg_replace('/@error\s*\((.*?)\)/', '<?php if ($message = errors($1)): ?>', $content);
+            $content = preg_replace('/@enderror/', '<?php endif; ?>', $content);
+            
             // Compile built-in helpers
             $content = preg_replace('/@csrf/', '<?php echo csrf(); ?>', $content);
 
