@@ -18,7 +18,22 @@ const Kite = {
     },
 
     bindEvents(root) {
-        // Handle Links with kite:navigate
+        // 1. Handle Forms with kite:submit FIRST
+        // We do forms first because cloning a form destroys event listeners on its children.
+        // If we clone forms first, the links inside them will be cloned. Then step 2 will bind the links.
+        const forms = root.querySelectorAll('form[kite\\:submit]');
+        forms.forEach(form => {
+            form.replaceWith(form.cloneNode(true));
+        });
+
+        root.querySelectorAll('form[kite\\:submit]').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitForm(form);
+            });
+        });
+
+        // 2. Handle Links with kite:navigate
         const links = root.querySelectorAll('a[kite\\:navigate]');
         links.forEach(link => {
             // Remove old listener to prevent duplicates if re-binding
@@ -33,19 +48,6 @@ const Kite = {
                 if (url) {
                     this.navigate(url);
                 }
-            });
-        });
-
-        // Handle Forms with kite:submit
-        const forms = root.querySelectorAll('form[kite\\:submit]');
-        forms.forEach(form => {
-            form.replaceWith(form.cloneNode(true));
-        });
-
-        root.querySelectorAll('form[kite\\:submit]').forEach(form => {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.submitForm(form);
             });
         });
     },
@@ -141,10 +143,12 @@ const Kite = {
     },
 
     showLoading(element = null) {
-        document.body.style.opacity = '0.7';
+        document.body.style.cursor = 'wait';
+        document.body.style.pointerEvents = 'none'; // Prevent double clicks
     },
 
     hideLoading(element = null) {
-        document.body.style.opacity = '1';
+        document.body.style.cursor = 'default';
+        document.body.style.pointerEvents = 'auto';
     }
 };
